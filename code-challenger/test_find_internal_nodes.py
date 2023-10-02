@@ -32,3 +32,13 @@ class TestClass:
         my_tree = [2, 2, -1, 2, 2]
         assert find_internal_nodes_num(my_tree) == 1
 
+    def test_find_internal_nodes_5(self):
+        # An empty tree
+        my_tree = []
+        assert find_internal_nodes_num(my_tree) == 0
+
+    def test_find_internal_nodes_6(self):
+        # A tree with multiple branches
+        my_tree = [-1, 0, 0, 2, 2, 3, 3]
+        assert find_internal_nodes_num(my_tree) == 3
+
