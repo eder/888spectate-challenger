@@ -10,7 +10,7 @@ class TestClass:
         # Check if list is not empty
         assert len(my_tree) > 0, "Input list should not be empty"
         
-        # Now you can also check the functionality if you want
+        # Nowwe can also check the functionality if we want
         assert find_internal_nodes_num(my_tree) == 3
 
     def test_find_internal_nodes_1(self):
