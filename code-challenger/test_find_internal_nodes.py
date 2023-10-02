@@ -22,4 +22,13 @@ class TestClass:
         my_tree = [-1, -1, -1, -1]
         assert find_internal_nodes_num(my_tree) == 0
 
+    def test_find_internal_nodes_3(self):
+        # A linear tree (each node is parented by the previous node)
+        my_tree = [-1, 0, 1, 2, 3]
+        assert find_internal_nodes_num(my_tree) == 4
+
+    def test_find_internal_nodes_4(self):
+        # A tree where all nodes have the same parent
+        my_tree = [2, 2, -1, 2, 2]
+        assert find_internal_nodes_num(my_tree) == 1
 
