@@ -1,0 +1,17 @@
+# Core
+fastapi[all]                 # FastAPI with all optional extras
+uvicorn                       # ASGI server to run FastAPI
+gino[starlette]               # GINO ORM with support for FastAPI/Starlette
+asyncpg                       # Asynchronous PostgreSQL driver, needed for GINO
+httpx                        # For FastAPI's TestClient
+
+# Testing
+pytest                        # Main testing framework
+pytest-asyncio                # Pytest support for asynchronous code
+pytest-postgresql             # Pytest support for testing with PostgreSQL
+factory_boy                   # Object factory tool for tests
+pytest-cov                    # Test coverage report tool
+
+# Other useful dependencies (add or remove as needed)
+python-dotenv                 # To manage environment variables
+pydantic[dotenv]              # Pydantic extension for .env support
