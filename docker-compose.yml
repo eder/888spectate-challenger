@@ -11,7 +11,7 @@ services:
       - db
     command: bash -c "uvicorn main:app --host 0.0.0.0 --reload"
     environment:
-      DATABASE_URL: postgresql://fastapi_user:fastapi_password@db/fastapi_db
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
 
   db:
     image: postgres:13
