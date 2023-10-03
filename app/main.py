@@ -1,14 +1,20 @@
-from fastapi import FastAPI
-from db import db
+from fastapi import FastAPI, APIRouter, HTTPException
+
+from db.models import Sport as SportDBModel
+from schemas import SportBase, SportResponse, SportCreate
+
+
 
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup():
+    pass
 
 @app.on_event("shutdown")
 async def shutdown():
-    await db.pop_bind().close()
+    pass
+   # await db.pop_bind().close()
 
 @app.get("/")
 def read_root():
