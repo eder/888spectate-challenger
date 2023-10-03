@@ -12,6 +12,13 @@ pytest-postgresql             # Pytest support for testing with PostgreSQL
 factory_boy                   # Object factory tool for tests
 pytest-cov                    # Test coverage report tool
 
+# Databases (ORM) Migration 
+
+gino                          # GINO is a non-typical object-relational mapping
+alembic												# Alembic is a lightweight database migration tool 
+															#	for usage with the SQLAlchemy
+asyncpg 							
+
 # Other useful dependencies (add or remove as needed)
 python-dotenv                 # To manage environment variables
 pydantic[dotenv]              # Pydantic extension for .env support
