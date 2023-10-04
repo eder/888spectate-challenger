@@ -4,10 +4,22 @@ from datetime import datetime
 class SportBase(BaseModel):
     name: str
     slug: str
-    active: bool = True
+    active: bool
 
-class SportCreate(SportBase):
-    pass
+class EventBase(BaseModel):
+    name: str
+    slug: str
+    active: bool
+    type: str
+    sport: SportBase
+    status: str
+    scheduled_start: datetime
+    actual_start: datetime
 
-class SportResponse(SportBase):
-    id: int
+class SelectionBase(BaseModel):
+    name: str
+    event: EventBase
+    price: float
+    active: bool
+    outcome: str
+
