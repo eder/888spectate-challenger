@@ -1,6 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, conint, constr
 from datetime import datetime
 from enum import Enum
+from typing import Optional
+
 
 class EventType(Enum):
     PREPLAY = "preplay"
@@ -41,3 +43,16 @@ class SelectionBase(BaseModel):
     active: bool
     outcome: SelectionOutcome
 
+
+
+class SearchFilter(BaseModel):
+    name_regex: Optional[constr(strip_whitespace=True)] 
+    min_active_count: Optional[conint(ge=0)] 
+    start_time_from: Optional[datetime] 
+    start_time_to: Optional[datetime] 
+    timezone: Optional[str]  
+
+class SearchModel(BaseModel):
+    sport: Optional[SearchFilter]
+    event: Optional[SearchFilter]
+    selection: Optional[SearchFilter]
