@@ -4,6 +4,7 @@ uvicorn                       # ASGI server to run FastAPI
 asyncpg                       # Asynchronous PostgreSQL driver
 httpx                         # For FastAPI's TestClient
 psycopg2
+
 # Testing
 pytest                        # Main testing framework
 pytest-asyncio                # Pytest support for asynchronous code
