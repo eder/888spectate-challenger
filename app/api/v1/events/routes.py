@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Depends
+
 from utils.dependencies import get_event_service
 from schemas import EventBase
 from services.event_service import EventService

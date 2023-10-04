@@ -1,8 +1,7 @@
 import os
 import asyncpg
 
-#DATABASE_URL = os.environ['DATABASE_URL']
-DATABASE_URL = "postgresql://sportsbook_user:12345@db:5432/sportsbook_db"
+DATABASE_URL = os.environ['DATABASE_URL']
 
 pool: asyncpg.pool.Pool = None
 
