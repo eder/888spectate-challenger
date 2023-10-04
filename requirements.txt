@@ -1,10 +1,9 @@
 # Core
-fastapi[all]                 # FastAPI with all optional extras
+fastapi[all]                  # FastAPI with all optional extras
 uvicorn                       # ASGI server to run FastAPI
-gino[starlette]               # GINO ORM with support for FastAPI/Starlette
-asyncpg                       # Asynchronous PostgreSQL driver, needed for GINO
-httpx                        # For FastAPI's TestClient
-
+asyncpg                       # Asynchronous PostgreSQL driver
+httpx                         # For FastAPI's TestClient
+psycopg2
 # Testing
 pytest                        # Main testing framework
 pytest-asyncio                # Pytest support for asynchronous code
@@ -14,10 +13,7 @@ pytest-cov                    # Test coverage report tool
 
 # Databases (ORM) Migration 
 
-gino                          # GINO is a non-typical object-relational mapping
 alembic												# Alembic is a lightweight database migration tool 
-															#	for usage with the SQLAlchemy
-asyncpg 							
 
 # Other useful dependencies (add or remove as needed)
 python-dotenv                 # To manage environment variables

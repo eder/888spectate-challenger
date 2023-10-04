@@ -1,16 +1,11 @@
 from fastapi import FastAPI
-from db import db
+from api.v1.sports.routes import sports_router
 
 app = FastAPI()
 
-@app.on_event("startup")
-async def startup():
-
-@app.on_event("shutdown")
-async def shutdown():
-    await db.pop_bind().close()
+app.include_router(sports_router, prefix="/sports", tags=["sports"])
 
 @app.get("/")
-def read_root():
+async def read_root():
     return {"Hello": "World"}
 
