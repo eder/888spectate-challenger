@@ -7,9 +7,6 @@ from sqlalchemy import pool
 
 from alembic import context
 
-DATABASE_URL = os.environ['DATABASE_URL'] 
-
-
 from sqlalchemy import MetaData
 metadata = MetaData()
 
@@ -17,7 +14,7 @@ config = context.config
 
 fileConfig(config.config_file_name)
 
-DATABASE_URL = os.environ.get('DATABASE_URL') or config.get_main_option("sqlalchemy.url")
+DATABASE_URL = os.environ.get('DATABASE_PSYCOP_URL') or config.get_main_option("sqlalchemy.url")
 
 config.set_main_option('sqlalchemy.url', DATABASE_URL)
 

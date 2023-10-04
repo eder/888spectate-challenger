@@ -15,8 +15,8 @@ def upgrade():
         sa.Column('type', sa.Enum('preplay', 'inplay', name='eventtype'), nullable=False),
         sa.Column('sport_id', sa.Integer, sa.ForeignKey('sports.id'), nullable=False),
         sa.Column('status', sa.Enum('pending', 'started', 'ended', 'cancelled', name='eventstatus'), nullable=False),
-        sa.Column('scheduled_start', sa.DateTime, nullable=False, server_default=sa.text('CURRENT_TIMESTAMP')),
-        sa.Column('actual_start', sa.DateTime),
+        sa.Column('scheduled_start', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('CURRENT_TIMESTAMP')),
+        sa.Column('actual_start', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'))
     )
