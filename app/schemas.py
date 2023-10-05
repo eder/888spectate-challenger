@@ -62,7 +62,12 @@ class SelectionBase(BaseModel):
     active: bool
     outcome: SelectionOutcome
 
-
+class SelectionUpdate(BaseModel):
+    name: Optional[str] = None
+    event_id: Optional[int] = None
+    price: Optional[float] = None
+    active:  Optional[bool] = None
+    outcome: Optional[SelectionOutcome] = None
 
 class SearchFilter(BaseModel):
     name_regex: Optional[constr(strip_whitespace=True)] 

@@ -31,4 +31,4 @@ def get_selection_repository() -> SelectionRepository:
     return SelectionRepository(get_db_pool())
 
 def get_selection_service(repo: SelectionRepository = Depends(get_selection_repository)) -> SelectionService:
-    return SelectionService(repository=repo)
+    return SelectionService(selection_repository=repo)
