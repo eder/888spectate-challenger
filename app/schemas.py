@@ -26,11 +26,6 @@ class EventUpdate(BaseModel):
     actual_start: Optional[datetime] = None
 
 
-class SportBase(BaseModel):
-    name: str
-    slug: str
-    active: bool
-
 class EventBase(BaseModel):
     name: str
     slug: str
@@ -40,6 +35,19 @@ class EventBase(BaseModel):
     sport_id: int
     scheduled_start: datetime
     actual_start: datetime
+
+
+
+class SportBase(BaseModel):
+    name: str
+    slug: str
+    active: bool
+
+class SportUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    active: Optional[bool] = None
+
 
 class SelectionOutcome(Enum):
     UNSETTLED = "unsettled"

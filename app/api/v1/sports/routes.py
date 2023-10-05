@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from utils.dependencies import get_sport_service
 from services.sport_service import SportService
-from schemas import SportBase
+from schemas import SportBase, SportUpdate
 
 sports_router = APIRouter()
 
@@ -14,3 +14,9 @@ async def get_all_sports(service: SportService = Depends(get_sport_service)):
 async def create_sport(sport: SportBase, service: SportService = Depends(get_sport_service)):
     return await service.create(sport)
 
+@sports_router.put("/sports/{sport_id}")
+async def updating_sport(sport_id: int, sport:SportUpdate, service: SportService = Depends(get_sport_service)):
+    updated_sport = await service.update(sport_id, sport.dict())
+    if not updating_sport:
+        raise HTTPException(status_code=404, detail="Sport not found")
+    return updated_sport
