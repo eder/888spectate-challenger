@@ -10,8 +10,8 @@ class EventType(Enum):
 
 
 class EventStatus(Enum):
-    STARTED = "started"
     PENDING = "pending"
+    STARTED = "started"
     ENDED = "ended"
     CANCELLED = "cancelled"
 

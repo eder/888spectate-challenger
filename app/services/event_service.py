@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from schemas import SearchFilter
 from repositories.event_repository import EventRepository
 
@@ -13,7 +15,9 @@ class EventService:
         return await self.event_repository.create(event)
 
     async def update(self, event_id: int, event_data: dict) -> dict:
-        return await self.event_repository.update(event_id, event_data)
+        if event_data.get("status").value == "started":
+            event_data["actual_start"] = datetime.utcnow()
+        return await self.event_repository.update(event_id, event_data) 
 
     async def search_events(self, criteria: SearchFilter):
         return await self.event_repository.search_events_by_criteria(criteria)
