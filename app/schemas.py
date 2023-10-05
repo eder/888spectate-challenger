@@ -15,6 +15,17 @@ class EventStatus(Enum):
     ENDED = "ended"
     CANCELLED = "cancelled"
 
+class EventUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    active: Optional[bool] = None
+    type: Optional[EventType] = None
+    sport_id: Optional[int] = None
+    status: Optional[EventStatus] = None
+    scheduled_start: Optional[datetime] = None
+    actual_start: Optional[datetime] = None
+
+
 class SportBase(BaseModel):
     name: str
     slug: str
