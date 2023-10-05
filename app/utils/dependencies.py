@@ -23,7 +23,7 @@ def get_sport_repository() -> SportRepository:
     return SportRepository(get_db_pool())
 
 def get_sport_service(repo: SportRepository = Depends(get_sport_repository)) -> SportService:
-    return SportService(repository=repo)
+    return SportService(sport_repository=repo)
 
 
 # Selections
