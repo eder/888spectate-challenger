@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from utils.dependencies import get_selection_service
-from schemas import SelectionBase
+from utils.custom_execptions import  CreationError 
+from schemas import SelectionBase, SelectionUpdate
 from services.selection_service import SelectionService
 from repositories.selection_repository import SelectionRepository 
 
@@ -14,5 +15,29 @@ async def get_all_selections(service: SelectionService = Depends(get_selection_s
 
 @selections_router.post("/selections/")
 async def create_selection(selection: SelectionBase, service: SelectionService = Depends(get_selection_service)):
-    return await service.create(selection.dict())
+    try:
+        return await service.create(selection.dict())
+        
+        except ValidationError as ve:
+            raise HTTPException(status_code=422, detail=str(ve))
+        except CreationError as ce:
+            raise HTTPException(status_code=400, detail=str(ce))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+
+
+
+
+@selections_router.put("/selections/{selection_id}")
+async def update_selection(selection_id: int, selection: SelectionUpdate, service: SelectionService = Depends(get_selection_service)):
+    try:
+        updated_selection = await service.update(selection_id, selection.dict())
+    except ForeignKeyError:
+        raise HTTPException(status_code=400, detail="Invalid event ID provided.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    if not updated_selection:
+        raise HTTPException(status_code=404, detail="Selection not found")
+    return updated_selection
+
 
