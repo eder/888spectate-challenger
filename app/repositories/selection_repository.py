@@ -7,9 +7,14 @@ class SelectionRepository:
         self.db_pool = db_pool
 
     async def get_all(self) -> list:
-        async with self.db_pool.acquire() as connection:
-            rows = await connection.fetch("SELECT * FROM selections")
-            return [dict(row) for row in rows]
+            try:
+                async with self.db_pool.acquire() as connection:
+                    rows = await connection.fetch("SELECT * FROM selections")
+                    return [dict(row) for row in rows]
+            except Exception as e:
+                raise RepositoryError(f"Erro ao buscar seleções: {str(e)}")
+
+
 
     async def create(self, selection: dict) -> dict:
         outcome_value = selection["outcome"].value if isinstance(selection["outcome"], SelectionOutcome) else selection["outcome"]
