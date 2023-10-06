@@ -1,9 +1,9 @@
-import asyncpg
+from db.database import get_db_pool 
 from schemas import SelectionOutcome
 
 class SelectionRepository:
 
-    def __init__(self, db_pool: asyncpg.pool.Pool):
+    def __init__(self, db_pool:get_db_pool):
         self.db_pool = db_pool
 
     async def get_all(self) -> list:

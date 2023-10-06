@@ -1,10 +1,11 @@
-import asyncpg
 from typing import List
+
+from db.database import get_db_pool 
 from schemas import SportBase
 
 class SportRepository:
 
-    def __init__(self, db_pool: asyncpg.pool.Pool):
+    def __init__(self, db_pool: get_db_pool):
         self.db_pool = db_pool
 
     async def get_all(self) -> List[dict]:

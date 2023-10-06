@@ -1,16 +1,35 @@
 from datetime import datetime
 from schemas import EventType, EventStatus, SearchFilter
 import asyncpg
-
+from db.database import get_db_pool 
 class EventRepository:
 
-    def __init__(self, db_pool: asyncpg.pool.Pool):
+    def __init__(self, db_pool: get_db_pool):
         self.db_pool = db_pool
 
     async def get_all(self) -> list:
-        async with self.db_pool.acquire() as connection:
-            rows = await connection.fetch("SELECT * FROM events")
-            return [dict(row) for row in rows]
+            """
+            Fetch all events from the database.
+
+            Returns:
+                list: List of dictionary representations of events.
+                      Returns an empty list if there's an error.
+
+            Raises:
+                Prints an error message in case of database or unexpected errors.
+            """
+            try:
+                async with self.db_pool.acquire() as connection:
+                    rows = await connection.fetch("SELECT * FROM events")
+                    return [dict(row) for row in rows]
+
+            except (asyncpg.QueryCanceledError, asyncpg.PostgresError):
+                print("Database error.")
+                return []
+
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                return []
 
     async def create(self, event: dict) -> dict:
         scheduled_start = datetime.fromisoformat(event["scheduled_start"].isoformat())
