@@ -93,3 +93,18 @@ class EventRepository:
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query, *values)
                 return [dict(row) for row in rows]
+
+
+    async def get_events_with_min_active_selections(self, min_selections: int):
+            query = """
+                SELECT e.*
+                FROM events e
+                JOIN selections s ON e.id = s.event_id
+                WHERE s.active = true
+                GROUP BY e.id
+                HAVING COUNT(s.id) >= $1
+            """
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query, min_selections)
+                return [dict(row) for row in rows]
+      

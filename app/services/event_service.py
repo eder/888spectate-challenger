@@ -19,6 +19,10 @@ class EventService:
             event_data["actual_start"] = datetime.utcnow()
         return await self.event_repository.update(event_id, event_data) 
 
+    # async def search_events(self, criteria: SearchFilter):
+        # return await self.event_repository.search_events_by_criteria(criteria)
+   
     async def search_events(self, criteria: SearchFilter):
+        if criteria.min_active_selections:
+            return await self.event_repository.get_events_with_min_active_selections(criteria.min_active_selections)
         return await self.event_repository.search_events_by_criteria(criteria)
-    

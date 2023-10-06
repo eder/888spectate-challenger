@@ -75,6 +75,7 @@ class SearchFilter(BaseModel):
     start_time_from: Optional[datetime] 
     start_time_to: Optional[datetime] 
     timezone: Optional[str]  
+    min_active_selections: int = None
 
 class SearchModel(BaseModel):
     sport: Optional[SearchFilter]
