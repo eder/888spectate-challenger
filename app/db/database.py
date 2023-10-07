@@ -16,6 +16,9 @@ class NotConnectedError(DatabaseError):
     """Exception raised when an operation requires a connection that isn't present."""
     pass
 
+class CustomPostgresError(asyncpg.PostgresError):
+    """Custom exception to wrap asyncpg.PostgresError."""
+    pass
 async def connect_to_db():
     global pool
 

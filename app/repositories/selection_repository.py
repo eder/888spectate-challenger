@@ -1,52 +1,90 @@
-import asyncpg
+from db.database import get_db_pool, CustomPostgresError 
 from schemas import SelectionOutcome
+
+from utils.query_builder import QueryBuilder 
 
 class SelectionRepository:
 
-    def __init__(self, db_pool: asyncpg.pool.Pool):
+    def __init__(self, db_pool: get_db_pool):
+        """
+        Initialize the SelectionRepository.
+
+        Args:
+            db_pool (asyncpg.pool.Pool): The database connection pool.
+        """
         self.db_pool = db_pool
+        self.query_builder = QueryBuilder('selections')
 
     async def get_all(self) -> list:
-        async with self.db_pool.acquire() as connection:
-            rows = await connection.fetch("SELECT * FROM selections")
-            return [dict(row) for row in rows]
+        """
+        Fetch all selections from the database.
 
-    async def create(self, selection: dict) -> dict:
-        outcome_value = selection["outcome"].value if isinstance(selection["outcome"], SelectionOutcome) else selection["outcome"]
-        
-        async with self.db_pool.acquire() as connection:
-            row = await connection.fetchrow(
-                """
-                INSERT INTO selections(name, event_id, price, active, outcome) 
-                VALUES($1, $2, $3, $4, $5) 
-                RETURNING *
-                """,
-                selection["name"], selection["event_id"], selection["price"], selection["active"], outcome_value
-            )
-            return dict(row)
-    
-    
-    async def update(self, selection_id: int, selection_data: dict) -> dict:
-        selection_data["outcome"] = selection_data["outcome"].value if isinstance(selection_data["outcome"], SelectionOutcome) else selection_data["outcome"]
-        set_clause = ", ".join(f"{key}=${i+1}" for i, key in enumerate(selection_data.keys()))
-        values = list(selection_data.values()) + [selection_id]
+        Returns:
+            list: List of dictionary representations of selections.
+                  Returns an empty list if there's an error.
 
-        query = f"""
-        UPDATE selections
-        SET {set_clause}
-        WHERE id=${len(values)}
-        RETURNING *;
+        Raises:
+            RepositoryError: If there's an error during database access.
         """
         try:
+            query = self.query_builder.build_query()
             async with self.db_pool.acquire() as connection:
-                row = await connection.fetchrow(query, *values)
+                rows = await connection.fetch(query)
+                return [dict(row) for row in rows]
+        except Exception as e:
+            raise RepositoryError(f"Error: {str(e)}")
+
+    async def create(self, selection: dict) -> dict:
+        """
+        Create a new selection in the database.
+
+        Args:
+            selection (dict): Dictionary representing the selection data.
+
+        Returns:
+            dict: Dictionary representing the newly created selection.
+
+        Raises:
+            CustomPostgresError: If there's an error during database access.
+        """
+        try:
+            self.query_builder.add_insert_data(selection)
+            insert_query = self.query_builder.build_insert_query()
+            async with self.db_pool.acquire() as connection:
+                row = await connection.fetchrow(insert_query)
+                if row:
+                    return dict(row)
+                else:
+                    raise CustomPostgresError("Record not found after insertion")
+        except CustomPostgresError as e:
+            print(f"error: {e}")
+
+    async def update(self, selection_id: int, selection: dict) -> dict:
+        """
+        Update a selection in the database.
+
+        Args:
+            selection_id (int): The ID of the selection to be updated.
+            selection (dict): Dictionary representing the updated selection data.
+
+        Returns:
+            dict: Dictionary representing the updated selection, or None if not found.
+
+        Raises:
+            UpdateError: If the selection with the specified ID is not found.
+            ForeignKeyError: If an invalid selection ID is provided.
+        """
+        try:
+            self.query_builder.add_condition("id", selection_id) 
+            self.query_builder.add_update_data(selection)
+            update_query = self.query_builder.build_update_query()
+            async with self.db_pool.acquire() as connection:
+                row = await connection.fetchrow(update_query)
                 if row:
                     return dict(row)
                 raise UpdateError(f"Selection with ID {selection_id} not found.")
-
-        except asyncpg.ForeignKeyViolationError as e:
+        except CustomPostgresError as e:
             if "selections_event_id_fkey" in str(e):
-                raise ForeignKeyError("Invalid event ID provided.") from e
+                raise ForeignKeyError("Invalid Selection ID provided.") from e
             raise UpdateError(f"Error updating selection with ID {selection_id}. Error: {str(e)}")
 
-            
