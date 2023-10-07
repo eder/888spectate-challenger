@@ -1,8 +1,9 @@
 import unittest
-import asyncpg
 from unittest.mock import patch
+import asyncpg
 
 from db.database import connect_to_db, close_db_connection, get_db_pool, DatabaseError
+
 
 class DatabaseTests(unittest.TestCase):
 

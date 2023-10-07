@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-
-from utils.dependencies import get_sport_service
-from services.sport_service import SportService
 from schemas import SportBase, SportUpdate
+from services.sport_service import SportService
+from utils.dependencies import get_sport_service
+
 
 sports_router = APIRouter()
 

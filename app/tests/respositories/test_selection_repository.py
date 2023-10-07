@@ -1,8 +1,9 @@
-import pytest
 import asyncpg
+import pytest
 from pytest_mock import mocker
 from repositories.selection_repository import SelectionRepository
 from schemas import SelectionBase, SelectionOutcome
+
 
 @pytest.fixture
 def db_pool_mock(mocker):

@@ -1,5 +1,5 @@
-from repositories.selection_repository import SelectionRepository 
-from schemas import SelectionBase, SelectionOutcome, SelectionUpdate 
+from repositories.selection_repository import SelectionRepository
+from schemas import SelectionBase, SelectionOutcome, SelectionUpdate
 from utils.prepare_data_for_insert import prepare_data_for_insert
 
 class SelectionService:

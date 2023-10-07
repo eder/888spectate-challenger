@@ -1,8 +1,8 @@
 from datetime import datetime
 from schemas import EventType, EventStatus, SearchFilter
-from db.database import get_db_pool, CustomPostgresError 
+from db.database import get_db_pool, CustomPostgresError
+from utils.query_builder import QueryBuilder
 
-from utils.query_builder import QueryBuilder 
 
 class EventRepository:
 

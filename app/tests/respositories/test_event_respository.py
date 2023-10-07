@@ -1,10 +1,11 @@
 from datetime import datetime
-import pytest
 import asyncpg
+import pytest
 from pytest_mock import mocker
 
-from repositories.event_repository import EventRepository 
+from repositories.event_repository import EventRepository
 from schemas import EventType, EventStatus, SearchFilter
+
 
 @pytest.fixture
 def db_pool_mock(mocker):

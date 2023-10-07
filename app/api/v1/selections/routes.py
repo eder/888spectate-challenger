@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from utils.dependencies import get_selection_service
-from utils.custom_exceptions import  CreationError, ValidationError, ForeignKeyError
 from schemas import SelectionBase, SelectionUpdate
 from services.selection_service import SelectionService
-from repositories.selection_repository import SelectionRepository 
+from repositories.selection_repository import SelectionRepository
+from utils.custom_exceptions import CreationError, ValidationError, ForeignKeyError
+from utils.dependencies import get_selection_service
+
+
 
 selections_router = APIRouter()
 

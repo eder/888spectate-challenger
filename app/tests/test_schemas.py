@@ -5,6 +5,7 @@ from schemas import (EventType, EventStatus, SportBase, EventBase,
                      SelectionOutcome, 
                      SelectionBase, SearchModel, SearchFilter)
 
+
 def test_event_type_enum():
     assert EventType.PREPLAY.value == "preplay"
     assert EventType.INPLAY.value == "inplay"

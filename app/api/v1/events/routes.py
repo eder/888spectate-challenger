@@ -1,9 +1,8 @@
-
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import EventBase, EventUpdate
+from schemas import EventBase, EventUpdate, SearchModel
 from utils.dependencies import get_event_service
-from schemas import EventBase, SearchModel
 from services.event_service import EventService
+
 
 events_router = APIRouter()
 

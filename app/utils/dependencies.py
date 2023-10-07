@@ -1,5 +1,7 @@
 from fastapi import Depends
 
+from db.database import get_db_pool
+
 from repositories.event_repository import EventRepository
 from services.event_service import EventService
 
@@ -9,7 +11,6 @@ from services.sport_service import SportService
 from repositories.selection_repository import SelectionRepository
 from services.selection_service import SelectionService
 
-from db.database import get_db_pool
 
  # Events
 def get_event_repository() -> EventRepository:

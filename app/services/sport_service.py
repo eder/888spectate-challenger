@@ -1,6 +1,7 @@
 from repositories.sport_repository import SportRepository
 from utils.prepare_data_for_insert import prepare_data_for_insert
 
+
 class SportService:
 
     def __init__(self, sport_repository: SportRepository):

@@ -1,7 +1,6 @@
-from db.database import get_db_pool, CustomPostgresError 
+from db.database import get_db_pool, CustomPostgresError
 from schemas import SelectionOutcome
-
-from utils.query_builder import QueryBuilder 
+from utils.query_builder import QueryBuilder
 
 class SelectionRepository:
 

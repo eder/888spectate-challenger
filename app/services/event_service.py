@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from schemas import EventType, EventStatus, SearchFilter
 from repositories.event_repository import EventRepository
 from utils.prepare_data_for_insert import prepare_data_for_insert
