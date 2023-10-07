@@ -27,6 +27,8 @@ async def create_selection(selection: SelectionBase, service: SelectionService =
 
 @selections_router.put("/selections/{selection_id}")
 async def update_selection(selection_id: int, selection: SelectionUpdate, service: SelectionService = Depends(get_selection_service)):
+    updated_selection = await service.update(selection_id, selection.dict())
+    
     try:
         updated_selection = await service.update(selection_id, selection.dict())
     except ForeignKeyError:

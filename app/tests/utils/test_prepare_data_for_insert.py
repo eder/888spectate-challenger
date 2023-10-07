@@ -1,38 +1,46 @@
 import pytest
 from utils.prepare_data_for_insert import prepare_data_for_insert 
 
-def test_prepare_data_with_values():
+def test_prepare_data_for_insert():
     data = {
-        "field1": "value1",
-        "field2": "value2",
-        "field3": "value3"
+        "name": "John",
+        "age": None,
+        "city": "New York",
+        "country": None
     }
     result = prepare_data_for_insert(data)
-    
-    assert result["original_data"] == data
-    assert result["set_clause"] == "field1=$1, field2=$2, field3=$3"
-    assert result["values"] == ["value1", "value2", "value3"]
+    expected_result = {
+        "name": "John",
+        "city": "New York"
+    }
+    assert result == expected_result
 
-def test_prepare_data_with_none_values():
     data = {
-        "field1": "value1",
-        "field2": None,
-        "field3": "value3"
+        "name": "Alice",
+        "age": 30,
+        "city": "Los Angeles",
+        "country": "USA"
     }
     result = prepare_data_for_insert(data)
-    
-    assert result["original_data"] == data
-    assert result["set_clause"] == "field1=$1, field3=$2"
-    assert result["values"] == ["value1", "value3"]
+    expected_result = {
+        "name": "Alice",
+        "age": 30,
+        "city": "Los Angeles",
+        "country": "USA"
+    }
+    assert result == expected_result
 
-def test_prepare_data_with_empty_dict():
     data = {}
     result = prepare_data_for_insert(data)
-    
-    assert result["original_data"] == data
-    assert result["set_clause"] == ""
-    assert result["values"] == []
+    expected_result = {}
+    assert result == expected_result
 
-if __name__ == "__main__":
-    pytest.main()
+    data = {
+        "name": None,
+        "age": None,
+        "city": None
+    }
+    result = prepare_data_for_insert(data)
+    expected_result = {}
+    assert result == expected_result
 
