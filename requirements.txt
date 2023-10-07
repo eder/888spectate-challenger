@@ -8,6 +8,7 @@ psycopg2
 pytest                        # Main testing framework
 pytest-asyncio                # Pytest support for asynchronous code
 pytest-cov                    # Test coverage report tool
+pytest-mock									# Mock test
 httpx                         # For FastAPI's TestClient
 
 alembic												# Alembic is a lightweight database migration tool 
