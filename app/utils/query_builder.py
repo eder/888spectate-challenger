@@ -1,0 +1,56 @@
+from typing import List, Optional, Dict
+
+from typing import List, Optional, Dict
+
+class QueryBuilder:
+    def __init__(self, table_name: str):
+        self.table_name = table_name
+        self.conditions: List[str] = []
+        self.insert_data: List[dict] = []
+        self.update_data: Optional[Dict[str, str]] = None
+
+    def add_condition(self, field: str, value: str):
+        condition = f"{field} = '{value}'"
+        self.conditions.append(condition)
+
+    def add_insert_data(self, data: dict):
+        self.insert_data.append(data)
+
+    def add_update_data(self, data: Dict[str, str]):
+        self.update_data = data
+
+    def build_query(self) -> str:
+        if not self.conditions:
+            return f"SELECT * FROM {self.table_name}"
+        else:
+            conditions_str = " AND ".join(self.conditions)
+            return f"SELECT * FROM {self.table_name} WHERE {conditions_str}"
+
+    def build_insert_query(self) -> Optional[str]:
+        if not self.insert_data:
+            return None
+
+        columns = list(self.insert_data[0].keys())
+        values = []
+
+        for row_data in self.insert_data:
+            values.append(", ".join([f"'{row_data[column]}'" for column in columns]))
+
+        columns_str = ", ".join(columns)
+        values_str = "), (".join(values)
+
+        query = f"INSERT INTO {self.table_name} ({columns_str}) VALUES ({values_str}) RETURNING *"
+        return query
+
+    def build_update_query(self) -> Optional[str]:
+        if not self.update_data:
+            return None
+
+        if not self.conditions:
+            raise ValueError("Update query requires at least one condition to specify which records to update")
+
+        set_clause = ", ".join([f"{key} = '{value}'" for key, value in self.update_data.items()])
+        conditions_str = " AND ".join(self.conditions)
+        query = f"UPDATE {self.table_name} SET {set_clause} WHERE {conditions_str} RETURNING *"
+        return query
+
