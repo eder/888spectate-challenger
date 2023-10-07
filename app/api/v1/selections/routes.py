@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schemas import SelectionBase, SelectionUpdate
+from schemas import SelectionBase, SelectionUpdate, SearchNameModel
 from services.selection_service import SelectionService
 from repositories.selection_repository import SelectionRepository
 from utils.custom_exceptions import CreationError, ValidationError, ForeignKeyError
@@ -49,3 +49,11 @@ async def update_selection(
     if not updated_selection:
         raise HTTPException(status_code=404, detail="Selection not found")
     return updated_selection
+
+
+@selections_router.post("/selections/search/")
+async def search_sports(
+    criteria: SearchNameModel,
+    service: SelectionService = Depends(get_selection_service),
+):
+    return await service.search_selections(criteria)

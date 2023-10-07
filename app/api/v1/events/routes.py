@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import EventBase, EventUpdate, SearchModel
+from schemas import EventBase, EventUpdate, SearchModel, SearchNameModel
 from utils.dependencies import get_event_service
 from services.event_service import EventService
 
@@ -19,13 +19,6 @@ async def create_event(
     return await service.create(event.dict())
 
 
-@events_router.post("/events/search/")
-async def search_events(
-    criteria: SearchModel, service: EventService = Depends(get_event_service)
-):
-    return await service.search_events(criteria.event)
-
-
 @events_router.put("/events/{event_id}")
 async def update_event(
     event_id: int,
@@ -36,3 +29,17 @@ async def update_event(
     if not updated_event:
         raise HTTPException(status_code=404, detail="Event not found")
     return updated_event
+
+
+@events_router.post("/events/search/")
+async def search_events(
+    criteria: SearchNameModel, service: EventService = Depends(get_event_service)
+):
+    return await service.search_events(criteria)
+
+
+# @events_router.post("/events/search/")
+# async def search_events(
+# criteria: SearchModel, service: EventService = Depends(get_event_service)
+# ):
+# return await service.search_events(criteria.event)

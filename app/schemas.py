@@ -86,3 +86,7 @@ class SearchModel(BaseModel):
     sport: Optional[SearchFilter]
     event: Optional[SearchFilter]
     selection: Optional[SearchFilter]
+
+
+class SearchNameModel(BaseModel):
+    name_regex: Optional[constr(strip_whitespace=True)]

@@ -47,3 +47,23 @@ class SportService:
         """
         res = prepare_data_for_insert(sport_data)
         return await self.sport_repository.update(sport_id, sport_data)
+
+    async def search_sports(self, criteria: dict) -> dict:
+        """
+        Performs a sports search based on the provided criteria.
+
+        Args:
+            criteria (dict): A dictionary containing search criteria.
+                - name_regex (str): An optional regular expression to filter sports by name.
+
+        Returns:
+            dict: A dictionary containing the results of the sports search.
+
+        Raises:
+            ValueError: If the 'name_regex' parameter is None or an empty string.
+        """
+        if criteria.name_regex is not None and criteria.name_regex != "":
+            return await self.sport_repository.search_sports_with_regex(
+                criteria.name_regex
+            )
+        raise ValueError("The 'name_regex' parameter cannot be None or an empty string")

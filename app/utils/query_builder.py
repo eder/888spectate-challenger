@@ -1,3 +1,5 @@
+import re
+
 from typing import List, Optional, Dict
 
 
@@ -98,4 +100,22 @@ class QueryBuilder:
         )
         conditions_str = " AND ".join(self.conditions)
         query = f"UPDATE {self.table_name} SET {set_clause} WHERE {conditions_str} RETURNING *"
+        return query
+
+    def build_regex_query(self, column_name: str, regex: str) -> str:
+        """
+        Build a SQL query with a regular expression match.
+
+        Args:
+            column_name (str): The name of the column to match against.
+            regex (str): The regular expression pattern.
+
+        Returns:
+            str: The SQL query.
+        """
+        if not column_name or not regex:
+            raise ValueError("Both column name and regex must be provided")
+
+        # Use $1 as a parameter placeholder for the regex
+        query = f"SELECT * FROM {self.table_name} WHERE {column_name} ~ $1"
         return query

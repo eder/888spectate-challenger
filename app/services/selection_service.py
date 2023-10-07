@@ -65,3 +65,24 @@ class SelectionService:
         )
         res = prepare_data_for_insert(selection_data)
         return await self.selection_repository.update(selection_id, res)
+
+    async def search_selections(self, criteria: dict) -> dict:
+        """
+        Performs a selections search based on the provided criteria.
+
+        Args:
+            criteria (dict): A dictionary containing search criteria.
+                - name_regex (str): An optional regular expression to filter sports by name.
+
+        Returns:
+            dict: A dictionary containing the results of the selections search.
+
+        Raises:
+            ValueError: If the 'name_regex' parameter is None or an empty string.
+        """
+
+        if criteria.name_regex is not None and criteria.name_regex != "":
+            return await self.selection_repository.search_selections(
+                criteria.name_regex
+            )
+        raise ValueError("The 'name_regex' parameter cannot be None or an empty string")

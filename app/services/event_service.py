@@ -96,18 +96,38 @@ class EventService:
         return_event = prepare_data_for_insert(processed_event)
         return await self.event_repository.update(event_id, return_event)
 
-    async def search_events(self, criteria: SearchFilter):
+    async def search_events(self, criteria: dict) -> dict:
         """
-        Search events based on specified criteria.
+        Performs a event search based on the provided criteria.
 
         Args:
-            criteria (SearchFilter): The search criteria.
+            criteria (dict): A dictionary containing search criteria.
+                - name_regex (str): An optional regular expression to filter events by name.
 
         Returns:
-            list: A list of events that match the search criteria.
+            dict: A dictionary containing the results of the events search.
+
+        Raises:
+            ValueError: If the 'name_regex' parameter is None or an empty string.
         """
-        if criteria.min_active_selections:
-            return await self.event_repository.get_events_with_min_active_selections(
-                criteria.min_active_selections
+        if criteria.name_regex is not None and criteria.name_regex != "":
+            return await self.event_repository.search_events_with_regex(
+                criteria.name_regex
             )
-        return await self.event_repository.search_events_by_criteria(criteria)
+        raise ValueError("The 'name_regex' parameter cannot be None or an empty string")
+
+    # async def search_events(self, criteria: SearchFilter):
+    # """
+    # Search events based on specified criteria.
+
+    # Args:
+    # criteria (SearchFilter): The search criteria.
+
+    # Returns:
+    # list: A list of events that match the search criteria.
+    # """
+    # if criteria.min_active_selections:
+    # return await self.event_repository.get_events_with_min_active_selections(
+    # criteria.min_active_selections
+    # )
+    # return await self.event_repository.search_events_by_criteria(criteria)

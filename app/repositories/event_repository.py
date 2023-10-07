@@ -143,3 +143,15 @@ class EventRepository:
         async with self.db_pool.acquire() as connection:
             rows = await connection.fetch(query, min_selections)
             return [dict(row) for row in rows]
+
+    async def search_events_with_regex(self, regex: str):
+        try:
+            # Build the SQL query to search for sports with matching names
+            # Using named parameters like $1 in asyncpg ensures safe handling of parameter values, protecting against SQL injection in dynamic queries.
+            query = self.query_builder.build_regex_query("name", regex)
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query, regex)
+                return [dict(row) for row in rows]
+
+        except CustomPostgresError as e:
+            raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")

@@ -1,3 +1,5 @@
+from typing import List
+
 from db.database import get_db_pool, CustomPostgresError
 from schemas import SelectionOutcome
 from utils.query_builder import QueryBuilder
@@ -56,7 +58,7 @@ class SelectionRepository:
                 else:
                     raise CustomPostgresError("Record not found after insertion")
         except CustomPostgresError as e:
-            print(f"error: {e}")
+            "error: {e}"
 
     async def update(self, selection_id: int, selection: dict) -> dict:
         """
@@ -88,3 +90,15 @@ class SelectionRepository:
             raise UpdateError(
                 f"Error updating selection with ID {selection_id}. Error: {str(e)}"
             )
+
+    async def search_selections(self, regex: str) -> List[dict]:
+        try:
+            # Build the SQL query to search for sports with matching names
+            # Using named parameters like $1 in asyncpg ensures safe handling of parameter values, protecting against SQL injection in dynamic queries.
+            query = self.query_builder.build_regex_query("name", regex)
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query, regex)
+                return [dict(row) for row in rows]
+
+        except CustomPostgresError as e:
+            raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
