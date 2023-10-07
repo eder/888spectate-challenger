@@ -7,19 +7,23 @@ from utils.custom_exceptions import CreationError, ValidationError, ForeignKeyEr
 from utils.dependencies import get_selection_service
 
 
-
 selections_router = APIRouter()
 
+
 @selections_router.get("/selections/")
-async def get_all_selections(service: SelectionService = Depends(get_selection_service)):
+async def get_all_selections(
+    service: SelectionService = Depends(get_selection_service),
+):
     return await service.get_all()
 
 
 @selections_router.post("/selections/")
-async def create_selection(selection: SelectionBase, service: SelectionService = Depends(get_selection_service)):
+async def create_selection(
+    selection: SelectionBase, service: SelectionService = Depends(get_selection_service)
+):
     try:
         return await service.create(selection.dict())
-        
+
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=str(ve))
     except CreationError as ce:
@@ -27,10 +31,15 @@ async def create_selection(selection: SelectionBase, service: SelectionService =
     except Exception as e:
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
+
 @selections_router.put("/selections/{selection_id}")
-async def update_selection(selection_id: int, selection: SelectionUpdate, service: SelectionService = Depends(get_selection_service)):
+async def update_selection(
+    selection_id: int,
+    selection: SelectionUpdate,
+    service: SelectionService = Depends(get_selection_service),
+):
     updated_selection = await service.update(selection_id, selection.dict())
-    
+
     try:
         updated_selection = await service.update(selection_id, selection.dict())
     except ForeignKeyError:
@@ -40,5 +49,3 @@ async def update_selection(selection_id: int, selection: SelectionUpdate, servic
     if not updated_selection:
         raise HTTPException(status_code=404, detail="Selection not found")
     return updated_selection
-
-

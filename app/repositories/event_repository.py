@@ -5,7 +5,6 @@ from utils.query_builder import QueryBuilder
 
 
 class EventRepository:
-
     def __init__(self, db_pool: get_db_pool):
         """
         Initialize the EventRepository.
@@ -14,7 +13,7 @@ class EventRepository:
             db_pool (asyncpg.pool.Pool): The database connection pool.
         """
         self.db_pool = db_pool
-        self.query_builder = QueryBuilder('events')
+        self.query_builder = QueryBuilder("events")
 
     async def get_all(self) -> list:
         """
@@ -52,7 +51,7 @@ class EventRepository:
         """
         self.query_builder.add_insert_data(event)
         insert_query = self.query_builder.build_insert_query()
-        
+
         async with self.db_pool.acquire() as connection:
             row = await connection.fetchrow(insert_query)
             return dict(row)
@@ -71,7 +70,7 @@ class EventRepository:
         Raises:
             Exception: If there's an error during database access.
         """
-        self.query_builder.add_condition("id", event_id) 
+        self.query_builder.add_condition("id", event_id)
         self.query_builder.add_update_data(event)
         update_query = self.query_builder.build_update_query()
         try:
@@ -102,13 +101,13 @@ class EventRepository:
 
         if criteria.start_time_from and criteria.start_time_to:
             conditions.append("scheduled_start BETWEEN $2 AND $3")
-            
+
             start_time_from = criteria.start_time_from
             start_time_to = criteria.start_time_to
-            
+
             if isinstance(criteria.start_time_from, str):
                 start_time_from = datetime.fromisoformat(criteria.start_time_from)
-            
+
             if isinstance(criteria.start_time_to, str):
                 start_time_to = datetime.fromisoformat(criteria.start_time_to)
 
@@ -144,4 +143,3 @@ class EventRepository:
         async with self.db_pool.acquire() as connection:
             rows = await connection.fetch(query, min_selections)
             return [dict(row) for row in rows]
-

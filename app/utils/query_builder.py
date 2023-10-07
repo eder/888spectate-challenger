@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict
 
+
 class QueryBuilder:
     def __init__(self, table_name: str):
         """
@@ -88,10 +89,13 @@ class QueryBuilder:
             return None
 
         if not self.conditions:
-            raise ValueError("Update query requires at least one condition to specify which records to update")
+            raise ValueError(
+                "Update query requires at least one condition to specify which records to update"
+            )
 
-        set_clause = ", ".join([f"{key} = '{value}'" for key, value in self.update_data.items()])
+        set_clause = ", ".join(
+            [f"{key} = '{value}'" for key, value in self.update_data.items()]
+        )
         conditions_str = " AND ".join(self.conditions)
         query = f"UPDATE {self.table_name} SET {set_clause} WHERE {conditions_str} RETURNING *"
         return query
-

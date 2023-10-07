@@ -1,5 +1,6 @@
 from typing import List
 
+
 def find_internal_nodes_num(tree: List[int]) -> int:
     """
     Function to find the number of internal nodes in a tree representation.
@@ -10,7 +11,7 @@ def find_internal_nodes_num(tree: List[int]) -> int:
     Returns:
     - int: The number of internal nodes (unique parents) in the tree.
     """
-    
+
     # Initialize an empty dictionary to store node counts
     count = {}
 
@@ -27,4 +28,3 @@ def find_internal_nodes_num(tree: List[int]) -> int:
 
     # Return the number of unique parent nodes (internal nodes) in the tree
     return len(count)
-

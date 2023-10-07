@@ -2,8 +2,8 @@ from db.database import get_db_pool, CustomPostgresError
 from schemas import SelectionOutcome
 from utils.query_builder import QueryBuilder
 
-class SelectionRepository:
 
+class SelectionRepository:
     def __init__(self, db_pool: get_db_pool):
         """
         Initialize the SelectionRepository.
@@ -12,7 +12,7 @@ class SelectionRepository:
             db_pool (asyncpg.pool.Pool): The database connection pool.
         """
         self.db_pool = db_pool
-        self.query_builder = QueryBuilder('selections')
+        self.query_builder = QueryBuilder("selections")
 
     async def get_all(self) -> list:
         """
@@ -74,7 +74,7 @@ class SelectionRepository:
             ForeignKeyError: If an invalid selection ID is provided.
         """
         try:
-            self.query_builder.add_condition("id", selection_id) 
+            self.query_builder.add_condition("id", selection_id)
             self.query_builder.add_update_data(selection)
             update_query = self.query_builder.build_update_query()
             async with self.db_pool.acquire() as connection:
@@ -85,5 +85,6 @@ class SelectionRepository:
         except CustomPostgresError as e:
             if "selections_event_id_fkey" in str(e):
                 raise ForeignKeyError("Invalid Selection ID provided.") from e
-            raise UpdateError(f"Error updating selection with ID {selection_id}. Error: {str(e)}")
-
+            raise UpdateError(
+                f"Error updating selection with ID {selection_id}. Error: {str(e)}"
+            )

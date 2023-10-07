@@ -15,6 +15,7 @@ class EventStatus(Enum):
     ENDED = "ended"
     CANCELLED = "cancelled"
 
+
 class EventUpdate(BaseModel):
     name: Optional[str] = None
     slug: Optional[str] = None
@@ -30,18 +31,18 @@ class EventBase(BaseModel):
     name: str
     slug: str
     active: bool
-    type: EventType  
+    type: EventType
     status: EventStatus
     sport_id: int
     scheduled_start: datetime
     actual_start: datetime
 
 
-
 class SportBase(BaseModel):
     name: str
     slug: str
     active: bool
+
 
 class SportUpdate(BaseModel):
     name: Optional[str] = None
@@ -55,6 +56,7 @@ class SelectionOutcome(Enum):
     LOSE = "lose"
     WIN = "win"
 
+
 class SelectionBase(BaseModel):
     name: str
     event_id: int
@@ -62,20 +64,23 @@ class SelectionBase(BaseModel):
     active: bool
     outcome: SelectionOutcome
 
+
 class SelectionUpdate(BaseModel):
     name: Optional[str] = None
     event_id: Optional[int] = None
     price: Optional[float] = None
-    active:  Optional[bool] = None
+    active: Optional[bool] = None
     outcome: Optional[SelectionOutcome] = None
 
+
 class SearchFilter(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)] 
-    min_active_count: Optional[conint(ge=0)] 
-    start_time_from: Optional[datetime] 
-    start_time_to: Optional[datetime] 
-    timezone: Optional[str]  
+    name_regex: Optional[constr(strip_whitespace=True)]
+    min_active_count: Optional[conint(ge=0)]
+    start_time_from: Optional[datetime]
+    start_time_to: Optional[datetime]
+    timezone: Optional[str]
     min_active_selections: int = None
+
 
 class SearchModel(BaseModel):
     sport: Optional[SearchFilter]

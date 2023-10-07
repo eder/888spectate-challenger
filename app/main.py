@@ -17,7 +17,7 @@ app.include_router(selections_router, prefix="/api/v1", tags=["selections"])
 async def startup():
     await connect_to_db()
 
+
 @app.on_event("shutdown")
 async def shutdown():
     await close_db_connection()
-

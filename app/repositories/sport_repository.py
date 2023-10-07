@@ -1,11 +1,11 @@
 from typing import List
 
-from db.database import get_db_pool, CustomPostgresError 
+from db.database import get_db_pool, CustomPostgresError
 from schemas import SportBase
 from utils.query_builder import QueryBuilder
 
-class SportRepository:
 
+class SportRepository:
     def __init__(self, db_pool: get_db_pool):
         """
         Initialize the SportRepository.
@@ -14,7 +14,7 @@ class SportRepository:
             db_pool (asyncpg.pool.Pool): The database connection pool.
         """
         self.db_pool = db_pool
-        self.query_builder = QueryBuilder('sports')
+        self.query_builder = QueryBuilder("sports")
 
     async def get_all(self) -> List[dict]:
         """
@@ -76,7 +76,7 @@ class SportRepository:
             ForeignKeyError: If an invalid sport ID is provided.
         """
         try:
-            self.query_builder.add_condition("id", sport_id) 
+            self.query_builder.add_condition("id", sport_id)
             self.query_builder.add_update_data(sport)
             update_query = self.query_builder.build_update_query()
             async with self.db_pool.acquire() as connection:
@@ -87,5 +87,6 @@ class SportRepository:
         except CustomPostgresError as e:
             if "selections_event_id_fkey" in str(e):
                 raise ForeignKeyError("Invalid sport ID provided.") from e
-            raise UpdateError(f"Error updating sport with ID {sport_id}. Error: {str(e)}")
-
+            raise UpdateError(
+                f"Error updating sport with ID {sport_id}. Error: {str(e)}"
+            )

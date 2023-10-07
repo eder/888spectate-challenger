@@ -3,7 +3,6 @@ from utils.prepare_data_for_insert import prepare_data_for_insert
 
 
 class SportService:
-
     def __init__(self, sport_repository: SportRepository):
         """
         Initialize the SportService.
@@ -32,13 +31,9 @@ class SportService:
         Returns:
             dict: Dictionary representing the newly created sport.
         """
-        sport_data = {
-            "name": sport.name,
-            "slug": sport.slug,
-            "active": sport.active
-        }
+        sport_data = {"name": sport.name, "slug": sport.slug, "active": sport.active}
         return await self.sport_repository.create(sport_data)
-    
+
     async def update(self, sport_id: int, sport_data: dict) -> dict:
         """
         Update a sport.
@@ -52,4 +47,3 @@ class SportService:
         """
         res = prepare_data_for_insert(sport_data)
         return await self.sport_repository.update(sport_id, sport_data)
-
