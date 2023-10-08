@@ -1,10 +1,11 @@
 from repositories.selection_repository import SelectionRepository
+from repositories.event_repository import EventRepository
 from schemas import SelectionBase, SelectionOutcome, SelectionUpdate
 from utils.prepare_data_for_insert import prepare_data_for_insert
 
 
 class SelectionService:
-    def __init__(self, selection_repository: SelectionRepository):
+    def __init__(self, selection_repository: SelectionRepository, event_repository: EventRepository):
         """
         Initialize the SelectionService.
 
@@ -12,6 +13,7 @@ class SelectionService:
             selection_repository (SelectionRepository): An instance of the SelectionRepository.
         """
         self.selection_repository = selection_repository
+        self.event_repository = event_repository
 
     async def get_all(self):
         """
@@ -65,11 +67,19 @@ class SelectionService:
         )
         res = prepare_data_for_insert(selection_data)
         await self.selection_repository.update(selection_id, res)
-        # Todo eu faria essa validação em um fila para vericar todos cancelando e mandar uma mensagem direta para atualizar os dados de evento
+        # TO DO this I would do this validation in a queue to check everyone canceling and send a direct message to update the event data
         if selection_data["active"] == False:
-            await self.selection_repository.check_and_update_event_status()
+            await self.check_and_update_event_status(selection_id)
+        return await self.selection_repository.update(selection_id, res)
 
-        return self.selection_repository.update(selection_id, res)
+    async def check_and_update_event_status(self, selection_id:int):
+        
+        event_id = await self.selection_repository.get_event_id(selection_id)
+        active_selection_count = await self.selection_repository.get_active_selections_count(event_id)
+        
+        if active_selection_count == 0:
+            await self.event_repository.set_event_as_inactive(event_id)
+
 
     async def search_selections(self, criteria: dict) -> dict:
         """

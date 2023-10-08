@@ -38,6 +38,7 @@ async def update_selection(
     selection: SelectionUpdate,
     service: SelectionService = Depends(get_selection_service),
 ):
+    
     try:
         updated_selection = await service.update(selection_id, selection.dict())
     except ForeignKeyError:
