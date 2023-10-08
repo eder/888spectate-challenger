@@ -8,6 +8,7 @@ def prepare_data_for_insert(data_dict):
     Returns:
         dict: A new dictionary with keys that have non-None values.
     """
-    processed_data = {key: value for key, value in data_dict.items() if value is not None}
+    processed_data = {
+        key: value for key, value in data_dict.items() if value is not None
+    }
     return processed_data
-

@@ -1,20 +1,22 @@
 from datetime import datetime
 from schemas import EventType, EventStatus, SearchFilter
-from db.database import get_db_pool, CustomPostgresError 
+from db.database import get_db_pool, CustomPostgresError
+from utils.query_builder import QueryBuilder
+import logging
 
-from utils.query_builder import QueryBuilder 
 
 class EventRepository:
-
-    def __init__(self, db_pool: get_db_pool):
+    def __init__(self, db_pool: get_db_pool, logger: logging.Logger):
         """
         Initialize the EventRepository.
 
         Args:
             db_pool (asyncpg.pool.Pool): The database connection pool.
+            logger (logging.Logger): An instance of the logging logger.
         """
         self.db_pool = db_pool
-        self.query_builder = QueryBuilder('events')
+        self.query_builder = QueryBuilder("events")
+        self.logger = logger
 
     async def get_all(self) -> list:
         """
@@ -30,12 +32,14 @@ class EventRepository:
         query = self.query_builder.build_query()
 
         try:
+            self.logger.info("Fetching all events...")
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
 
         except Exception as e:
-            raise RepositoryError(f"Error: {str(e)}")
+            self.logger.error(f"Error fetching events: {e}")
+            raise RepositoryError(f"Error fetching events: {e}")
 
     async def create(self, event: dict) -> dict:
         """
@@ -52,10 +56,15 @@ class EventRepository:
         """
         self.query_builder.add_insert_data(event)
         insert_query = self.query_builder.build_insert_query()
-        
-        async with self.db_pool.acquire() as connection:
-            row = await connection.fetchrow(insert_query)
-            return dict(row)
+
+        try:
+            async with self.db_pool.acquire() as connection:
+                row = await connection.fetchrow(insert_query)
+                return dict(row)
+
+        except Exception as e:
+            self.logger.error(f"Error creating event: {e}")
+            raise RepositoryError(f"Error creating event: {e}")
 
     async def update(self, event_id: int, event: dict) -> dict:
         """
@@ -69,59 +78,22 @@ class EventRepository:
             dict: Dictionary representing the updated event, or None if not found.
 
         Raises:
-            Exception: If there's an error during database access.
+            RepositoryError: If there's an error during database access.
         """
-        self.query_builder.add_condition("id", event_id) 
+        self.query_builder.add_condition("id", event_id)
         self.query_builder.add_update_data(event)
         update_query = self.query_builder.build_update_query()
+
         try:
             async with self.db_pool.acquire() as connection:
                 row = await connection.fetchrow(update_query)
                 if row:
                     return dict(row)
                 return None
+
         except CustomPostgresError as e:
-            raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
-
-    async def search_events_by_criteria(self, criteria: SearchFilter) -> list:
-        """
-        Search for events based on the given criteria.
-
-        Args:
-            criteria (SearchFilter): The search criteria.
-
-        Returns:
-            list: List of dictionary representations of events that match the criteria.
-        """
-        conditions = []
-        values = []
-
-        if criteria.name_regex:
-            conditions.append("name ~ $1")
-            values.append(criteria.name_regex)
-
-        if criteria.start_time_from and criteria.start_time_to:
-            conditions.append("scheduled_start BETWEEN $2 AND $3")
-            
-            start_time_from = criteria.start_time_from
-            start_time_to = criteria.start_time_to
-            
-            if isinstance(criteria.start_time_from, str):
-                start_time_from = datetime.fromisoformat(criteria.start_time_from)
-            
-            if isinstance(criteria.start_time_to, str):
-                start_time_to = datetime.fromisoformat(criteria.start_time_to)
-
-            values.append(start_time_from)
-            values.append(start_time_to)
-
-        where_clause = " AND ".join(conditions) if conditions else "TRUE"
-
-        query = f"SELECT * FROM events WHERE {where_clause}"
-
-        async with self.db_pool.acquire() as connection:
-            rows = await connection.fetch(query, *values)
-            return [dict(row) for row in rows]
+            self.logger.error(f"Error updating event with ID {event_id}: {e}")
+            raise RepositoryError(f"Error updating event with ID {event_id}: {e}")
 
     async def get_events_with_min_active_selections(self, min_selections: int):
         """
@@ -141,7 +113,98 @@ class EventRepository:
             GROUP BY e.id
             HAVING COUNT(s.id) >= $1
         """
-        async with self.db_pool.acquire() as connection:
-            rows = await connection.fetch(query, min_selections)
-            return [dict(row) for row in rows]
+        try:
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query, min_selections)
+                return [dict(row) for row in rows]
 
+        except Exception as e:
+            self.logger.error(f"Error fetching events with min active selections: {e}")
+            raise RepositoryError(
+                f"Error fetching events with min active selections: {e}"
+            )
+
+    async def search_events_with_regex(self, criteria):
+        try:
+            params = []
+
+            query = (
+                "SELECT e.id, e.name, e.scheduled_start "
+                "FROM events e "
+                "JOIN selections sel ON e.id = sel.event_id "
+                "WHERE sel.active = TRUE"
+            )
+
+            if "name_regex" in criteria and criteria["name_regex"]:
+                query += " AND e.name ~ $" + str(len(params) + 1)
+                params.append(criteria["name_regex"])
+
+            if "active" in criteria and isinstance(criteria["active"], bool):
+                query += " AND e.active = $" + str(len(params) + 1)
+                params.append(criteria["active"])
+
+            if criteria.get("start_time") and criteria.get("end_time"):
+                query += (
+                    " AND e.scheduled_start BETWEEN $"
+                    + str(len(params) + 1)
+                    + " AND $"
+                    + str(len(params) + 2)
+                )
+                params.extend([criteria["start_time"], criteria["end_time"]])
+
+            threshold_value = criteria.get("threshold", 0)
+            if threshold_value:
+                query += " GROUP BY e.id HAVING COUNT(*) > $" + str(len(params) + 1)
+                params.append(threshold_value)
+
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query, *params)
+                return [dict(row) for row in rows]
+
+        except Exception as e:
+            self.logger.error(f"Error searching events with regex: {e}")
+            raise Exception(f"Error searching events with regex: {e}")
+
+    async def get_active_events_count(self, sport_id: int):
+        query = "SELECT COUNT(*) FROM events WHERE sport_id=$1 AND active=TRUE"
+        try:
+            async with self.db_pool.acquire() as connection:
+                return await connection.fetchval(query, sport_id)
+
+        except Exception as e:
+            self.logger.error(f"Error fetching active events count: {e}")
+            raise RepositoryError(f"Error fetching active events count: {e}")
+
+    async def set_event_as_inactive(self, event_id: int):
+        event = {"active": False}
+        self.query_builder.add_condition("id", event_id)
+        self.query_builder.add_update_data(event)
+        update_query = self.query_builder.build_update_query()
+
+        try:
+            async with self.db_pool.acquire() as connection:
+                row = await connection.fetchrow(update_query)
+                if row:
+                    return dict(row)
+                return None
+
+        except CustomPostgresError as e:
+            self.logger.error(f"Error setting event as inactive: {e}")
+            raise RepositoryError(f"Error setting event as inactive: {e}")
+
+    async def get_events_selections(self):
+        select_query = """
+        SELECT events.id, events.name, COUNT(selections.id) as active_selection_count 
+        FROM events 
+        JOIN selections ON events.id = selections.event_id 
+        WHERE selections.active = TRUE 
+        GROUP BY events.id 
+        """
+        try:
+            async with self.db_pool.acquire() as connection:
+                result = await connection.fetch(select_query)
+                return result
+
+        except Exception as e:
+            self.logger.error(f"Error fetching events' selections: {e}")
+            raise RepositoryError(f"Error fetching events' selections: {e}")
