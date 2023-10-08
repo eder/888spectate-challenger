@@ -38,6 +38,14 @@ class EventBase(BaseModel):
     actual_start: datetime
 
 
+class EventFilter(BaseModel):
+    name_regex: Optional[constr(strip_whitespace=True)]
+    active: Optional[bool] = None
+    threshold: Optional[int] = 1
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+
+
 class SportBase(BaseModel):
     name: str
     slug: str
@@ -48,6 +56,12 @@ class SportUpdate(BaseModel):
     name: Optional[str] = None
     slug: Optional[str] = None
     active: Optional[bool] = None
+
+
+class SportFilter(BaseModel):
+    name_regex: Optional[constr(strip_whitespace=True)]
+    active: Optional[bool] = None
+    threshold: Optional[int] = 1
 
 
 class SelectionOutcome(Enum):

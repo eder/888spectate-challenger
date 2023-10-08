@@ -1,6 +1,6 @@
+import logging
 import asyncpg
 import pytest
-from pytest_mock import mocker
 from repositories.selection_repository import SelectionRepository
 from schemas import SelectionBase, SelectionOutcome
 
@@ -11,7 +11,12 @@ def db_pool_mock(mocker):
 
 
 @pytest.fixture
-def selection_repository(db_pool_mock, mocker):
+def logger_mock(mocker):
+    return mocker.Mock(spec=logging.Logger)
+
+
+@pytest.fixture
+def selection_repository(db_pool_mock, logger_mock, mocker):
     mocker.patch.object(
         SelectionRepository,
         "get_all",
@@ -26,17 +31,17 @@ def selection_repository(db_pool_mock, mocker):
             }
         ],
     )
-    return SelectionRepository(db_pool_mock)
+    return SelectionRepository(db_pool_mock, logger_mock)
 
 
 @pytest.fixture
-def selection_repository_empty(db_pool_mock, mocker):
+def selection_repository_empty(db_pool_mock, logger_mock):
     mocker.patch.object(SelectionRepository, "get_all", return_value=[])
-    return SelectionRepository(db_pool_mock)
+    return SelectionRepository(db_pool_mock, logger_mock)
 
 
 @pytest.fixture
-def selection_repository_create(db_pool_mock, mocker):
+def selection_repository_create(db_pool_mock, logger_mock, mocker):
     return_value = {
         "id": 1,
         "name": "Selection 1",
@@ -45,13 +50,12 @@ def selection_repository_create(db_pool_mock, mocker):
         "active": True,
         "outcome": SelectionOutcome.WIN,
     }
-
     mocker.patch.object(SelectionRepository, "create", return_value=return_value)
-    return SelectionRepository(db_pool_mock)
+    return SelectionRepository(db_pool_mock, logger_mock)
 
 
 @pytest.fixture
-def selection_repository_update(db_pool_mock, mocker):
+def selection_repository_update(db_pool_mock, logger_mock, mocker):
     mocker.patch.object(
         SelectionRepository,
         "update",
@@ -64,7 +68,7 @@ def selection_repository_update(db_pool_mock, mocker):
             "outcome": SelectionOutcome.LOSE,
         },
     )
-    return SelectionRepository(db_pool_mock)
+    return SelectionRepository(db_pool_mock, logger_mock)
 
 
 @pytest.mark.asyncio
@@ -83,7 +87,6 @@ async def test_get_all_selections(selection_repository, mocker):
     mocker.patch.object(
         selection_repository.db_pool, "acquire", return_value=mocked_connection
     )
-
     selections = await selection_repository.get_all()
 
     assert selections == [
@@ -109,11 +112,9 @@ async def test_create_selection(selection_repository_create, mocker):
         "active": True,
         "outcome": SelectionOutcome.WIN,
     }
-
     mocker.patch.object(
         selection_repository_create.db_pool, "acquire", return_value=mocked_connection
     )
-
     selection_data = {
         "name": "Selection 1",
         "event_id": 1,
@@ -121,7 +122,6 @@ async def test_create_selection(selection_repository_create, mocker):
         "active": True,
         "outcome": SelectionOutcome.WIN,
     }
-
     created_selection = await selection_repository_create.create(selection_data)
 
     assert created_selection == {
@@ -145,13 +145,10 @@ async def test_update_selection(selection_repository_update, mocker):
         "active": False,
         "outcome": SelectionOutcome.LOSE,
     }
-
     mocker.patch.object(
         selection_repository_update.db_pool, "acquire", return_value=mocked_connection
     )
-
     selection_id = 1
-
     updated_selection_data = {
         "name": "Updated Selection",
         "event_id": 1,
@@ -159,11 +156,9 @@ async def test_update_selection(selection_repository_update, mocker):
         "active": False,
         "outcome": SelectionOutcome.LOSE,
     }
-
     updated_selection = await selection_repository_update.update(
         selection_id, updated_selection_data
     )
-
     assert updated_selection == {
         "id": 1,
         "name": "Updated Selection",

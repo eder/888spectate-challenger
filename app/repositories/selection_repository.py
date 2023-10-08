@@ -1,4 +1,5 @@
 from typing import List
+import logging
 
 from db.database import get_db_pool, CustomPostgresError
 from schemas import SelectionOutcome
@@ -6,15 +7,21 @@ from utils.query_builder import QueryBuilder
 
 
 class SelectionRepository:
-    def __init__(self, db_pool: get_db_pool):
+    """
+    A repository class responsible for managing CRUD operations on selections.
+    """
+
+    def __init__(self, db_pool: get_db_pool, logger: logging.Logger):
         """
         Initialize the SelectionRepository.
 
         Args:
             db_pool (asyncpg.pool.Pool): The database connection pool.
+            logger (logging.Logger): An instance of the logging logger.
         """
         self.db_pool = db_pool
         self.query_builder = QueryBuilder("selections")
+        self.logger = logger
 
     async def get_all(self) -> list:
         """
@@ -22,7 +29,6 @@ class SelectionRepository:
 
         Returns:
             list: List of dictionary representations of selections.
-                  Returns an empty list if there's an error.
 
         Raises:
             RepositoryError: If there's an error during database access.
@@ -33,6 +39,7 @@ class SelectionRepository:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
         except Exception as e:
+            self.logger.error(f"Error fetching selections: {e}")
             raise RepositoryError(f"Error: {str(e)}")
 
     async def create(self, selection: dict) -> dict:
@@ -46,7 +53,7 @@ class SelectionRepository:
             dict: Dictionary representing the newly created selection.
 
         Raises:
-            CustomPostgresError: If there's an error during database access.
+            CustomPostgresError: If there's a specific database error during the creation.
         """
         try:
             self.query_builder.add_insert_data(selection)
@@ -58,33 +65,35 @@ class SelectionRepository:
                 else:
                     raise CustomPostgresError("Record not found after insertion")
         except CustomPostgresError as e:
-            "error: {e}"
+            self.logger.error(f"Error creating selection: {e}")
+            raise CustomPostgresError(f"Error creating selection: {str(e)}")
 
     async def update(self, selection_id: int, selection: dict) -> dict:
         """
-        Update a selection in the database.
+        Update an existing selection in the database.
 
         Args:
-            selection_id (int): The ID of the selection to be updated.
-            selection (dict): Dictionary representing the updated selection data.
+            selection_id (int): The ID of the selection to update.
+            selection (dict): Dictionary containing updated selection data.
 
         Returns:
-            dict: Dictionary representing the updated selection, or None if not found.
+            dict: Dictionary representing the updated selection.
 
         Raises:
-            UpdateError: If the selection with the specified ID is not found.
-            ForeignKeyError: If an invalid selection ID is provided.
+            UpdateError, ForeignKeyError: If there's an error during the update.
         """
         try:
             self.query_builder.add_condition("id", selection_id)
             self.query_builder.add_update_data(selection)
             update_query = self.query_builder.build_update_query()
+            self.logger.info(f"Updating selection with ID {selection_id}...")
             async with self.db_pool.acquire() as connection:
                 row = await connection.fetchrow(update_query)
                 if row:
                     return dict(row)
                 raise UpdateError(f"Selection with ID {selection_id} not found.")
         except CustomPostgresError as e:
+            self.logger.error(f"Error updating selection with ID {selection_id}: {e}")
             if "selections_event_id_fkey" in str(e):
                 raise ForeignKeyError("Invalid Selection ID provided.") from e
             raise UpdateError(
@@ -92,27 +101,72 @@ class SelectionRepository:
             )
 
     async def get_active_selections_count(self, event_id: int):
-        # Count the number of active selections for the event
+        """
+        Get the count of active selections for a given event.
+
+        Args:
+            event_id (int): The ID of the event.
+
+        Returns:
+            int: The count of active selections.
+
+        Raises:
+            RepositoryError: If there's an error during database access.
+        """
         count_query = (
             "SELECT COUNT(*) FROM selections WHERE event_id=$1 AND active=TRUE"
         )
-        async with self.db_pool.acquire() as connection:
-            return await connection.fetchval(count_query, event_id)
+        try:
+            async with self.db_pool.acquire() as connection:
+                return await connection.fetchval(count_query, event_id)
+        except Exception as e:
+            self.logger.error(
+                f"Error fetching active selections count for event ID {event_id}: {e}"
+            )
+            raise RepositoryError(f"Error: {str(e)}")
 
     async def get_event_id(self, selection_id: int):
-        # Get event_id value
+        """
+        Fetch the event ID for a given selection ID.
+
+        Args:
+            selection_id (int): The ID of the selection.
+
+        Returns:
+            int: The event ID associated with the selection.
+
+        Raises:
+            RepositoryError: If there's an error during database access.
+        """
         event_id_query = "SELECT event_id FROM selections WHERE id = $1"
-        async with self.db_pool.acquire() as connection:
-            return await connection.fetchval(event_id_query, selection_id)
+        try:
+            async with self.db_pool.acquire() as connection:
+                return await connection.fetchval(event_id_query, selection_id)
+        except Exception as e:
+            self.logger.error(
+                f"Error fetching event ID for selection ID {selection_id}: {e}"
+            )
+            raise RepositoryError(f"Error: {str(e)}")
 
     async def search_selections(self, regex: str) -> List[dict]:
+        """
+        Search selections based on a regex pattern.
+
+        Args:
+            regex (str): The regex pattern to search for.
+
+        Returns:
+            List[dict]: List of dictionary representations of matched selections.
+
+        Raises:
+            Exception: If there's an error during the search.
+        """
         try:
-            # Build the SQL query to search for sports with matching names
-            # Using named parameters like $1 in asyncpg ensures safe handling of parameter values, protecting against SQL injection in dynamic queries.
             query = self.query_builder.build_regex_query("name", regex)
+            self.logger.info(f"Searching for selections with regex: {regex}")
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query, regex)
                 return [dict(row) for row in rows]
-
         except CustomPostgresError as e:
-            raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
+            self.logger.error(f"Error searching selections with regex: {e}")
+            raise Exception(f"Error searching selections: {str(e)}")

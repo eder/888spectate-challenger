@@ -1,21 +1,27 @@
+import logging
 from typing import List
-import re
 
-from db.database import get_db_pool, CustomPostgresError
+from db.database import get_db_pool
 from schemas import SportBase
 from utils.query_builder import QueryBuilder
 
+# Adicione a criação do logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 class SportRepository:
-    def __init__(self, db_pool: get_db_pool):
+    def __init__(self, db_pool: get_db_pool, logger: logging.Logger = logger):
         """
         Initialize the SportRepository.
 
         Args:
             db_pool (asyncpg.pool.Pool): The database connection pool.
+            logger (logging.Logger): An instance of the logging logger.
         """
         self.db_pool = db_pool
         self.query_builder = QueryBuilder("sports")
+        self.logger = logger  # Adicione o logger aqui
 
     async def get_all(self) -> List[dict]:
         """
@@ -27,7 +33,6 @@ class SportRepository:
 
         Raises:
             RepositoryError: If there's an error during database access.
-            irint(f'{query}+ {regex}')
         """
         try:
             query = self.query_builder.build_query()
@@ -35,6 +40,9 @@ class SportRepository:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
         except Exception as e:
+            self.logger.error(
+                f"Error fetching all sports: {str(e)}"
+            )  # Adicione o log aqui
             raise RepositoryError(f"Error: {str(e)}")
 
     async def create(self, sport: dict) -> dict:
@@ -58,9 +66,10 @@ class SportRepository:
                 if row:
                     return dict(row)
                 else:
-                    raise CustomPostgresError("Record not found after insertion")
-        except CustomPostgresError as e:
-            "error: {e}"
+                    raise Exception("Record not found after insertion")
+        except Exception as e:
+            self.logger.error(f"Error creating sport: {str(e)}")
+            raise Exception(f"Error creating sport: {str(e)}")
 
     async def update(self, sport_id: int, sport: dict) -> dict:
         """
@@ -86,36 +95,74 @@ class SportRepository:
                 if row:
                     return dict(row)
                 raise UpdateError(f"Sport with ID {selection_id} not found.")
-        except CustomPostgresError as e:
+        except Exception as e:
             if "selections_event_id_fkey" in str(e):
-                raise ForeignKeyError("Invalid sport ID provided.") from e
-            raise UpdateError(
-                f"Error updating sport with ID {sport_id}. Error: {str(e)}"
+                raise Exception("Invalid sport ID provided.") from e
+            raise Exception(f"Error updating sport with ID {sport_id}. Error: {str(e)}")
+
+    async def search_sports_with_regex(self, criteria) -> List[dict]:
+        try:
+            query = (
+                "SELECT * FROM (SELECT s.id, s.name, s.active, COUNT(e)  threshold FROM sports s "
+                "LEFT JOIN events e ON e.sport_id = s.id "
+                "WHERE e.active = TRUE OR e IS NULL "
+                "GROUP BY s.id) as sports "
+                "WHERE 1=1"
             )
 
-    async def search_sports_with_regex(self, regex: str) -> List[dict]:
-        try:
-            # Build the SQL query to search for sports with matching names
-            # Using named parameters like $1 in asyncpg ensures safe handling of parameter values, protecting against SQL injection in dynamic queries.
-            query = self.query_builder.build_regex_query("name", regex)
+            params = []
+
+            # Add criteria conditions
+            if "name_regex" in criteria and criteria["name_regex"]:
+                query += " AND name ~ $" + str(len(params) + 1)
+                params.append(criteria["name_regex"])
+
+            if "active" in criteria and isinstance(criteria["active"], bool):
+                query += " AND active = $" + str(len(params) + 1)
+                params.append(criteria["active"])
+
+            threshold_value = criteria.get("threshold", 1)
+            if threshold_value:
+                query += " AND threshold > $" + str(len(params) + 1)
+                params.append(threshold_value)
+
             async with self.db_pool.acquire() as connection:
-                rows = await connection.fetch(query, regex)
+                rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]
 
-        except CustomPostgresError as e:
-            raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
+        except Exception as e:
+            self.logger.error(f"Error searching sports: {str(e)}")
+            raise Exception(f"Error searching sports: {str(e)}")
 
     async def set_sport_inactive(self, sport_id: int):
+        """
+        Set a sport as inactive in the database.
+
+        Args:
+            sport_id (int): The ID of the sport to be marked as inactive.
+        """
         update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
         async with self.db_pool.acquire() as connection:
             await connection.execute(update_query, sport_id)
 
     async def filter_sports(self, threshold: int):
+        """
+        Filter sports based on a threshold value.
+
+        Args:
+            threshold (int): The threshold value used for filtering.
+        """
         update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
         async with self.db_pool.acquire() as connection:
             await connection.execute(update_query, sport_id)
 
     async def get_sports_events(self):
+        """
+        Get sports events from the database.
+
+        Returns:
+            List[dict]: List of dictionary representations of sports events.
+        """
         select_query = """
         SELECT s.id, s.name
         FROM sports s
@@ -129,4 +176,7 @@ class SportRepository:
                 result = await connection.fetch(select_query)
                 return result
         except Exception as e:
+            self.logger.error(
+                f"Error fetching sports events: {str(e)}"
+            )  # Adicione o log aqui
             raise Exception(f"An error occurred while fetching the sports: {str(e)}")
