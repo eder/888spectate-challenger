@@ -36,3 +36,8 @@ async def search_sports(
     criteria: SearchNameModel, service: SportService = Depends(get_sport_service)
 ):
     return await service.search_sports(criteria)
+
+
+@sports_router.get("/sports/events")
+async def filter_sports(service: SportService = Depends(get_sport_service)):
+    return await service.filter_sports()

@@ -109,3 +109,24 @@ class SportRepository:
         update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
         async with self.db_pool.acquire() as connection:
             await connection.execute(update_query, sport_id)
+
+    async def filter_sports(self, threshold: int):
+        update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
+        async with self.db_pool.acquire() as connection:
+            await connection.execute(update_query, sport_id)
+
+    async def filter_sports(self):
+        select_query = """
+        SELECT s.id, s.name
+        FROM sports s
+        JOIN events e ON s.id = e.sport_id
+        WHERE e.active = TRUE
+        GROUP BY s.id, s.name
+        """
+
+        try:
+            async with self.db_pool.acquire() as connection:
+                result = await connection.fetch(select_query)
+                return result
+        except Exception as e:
+            raise Exception(f"An error occurred while fetching the sports: {str(e)}")

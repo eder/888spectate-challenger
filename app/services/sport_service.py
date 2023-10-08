@@ -81,3 +81,6 @@ class SportService:
                 criteria.name_regex
             )
         raise ValueError("The 'name_regex' parameter cannot be None or an empty string")
+
+    async def filter_sports(self) -> dict:
+        return await self.sport_repository.filter_sports()
