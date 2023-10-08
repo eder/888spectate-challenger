@@ -115,7 +115,7 @@ class SportRepository:
         async with self.db_pool.acquire() as connection:
             await connection.execute(update_query, sport_id)
 
-    async def filter_sports(self):
+    async def get_sports_events(self):
         select_query = """
         SELECT s.id, s.name
         FROM sports s

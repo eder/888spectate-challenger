@@ -134,3 +134,21 @@ class EventRepository:
                 return None
         except CustomPostgresError as e:
             raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
+
+    async def get_events_selectitons(self):
+        select_query = """
+        SELECT events.id, events.name, COUNT(selections.id) as active_selection_count 
+        FROM events 
+        JOIN selections ON events.id = selections.event_id 
+        WHERE selections.active = TRUE 
+        GROUP BY events.id 
+        """
+
+        try:
+            async with self.db_pool.acquire() as connection:
+                result = await connection.fetch(select_query)
+                return result
+        except Exception as e:
+            raise Exception(
+                f"An error occurred while fetching the events and selections: {str(e)}"
+            )

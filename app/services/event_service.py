@@ -115,3 +115,6 @@ class EventService:
                 criteria.name_regex
             )
         raise ValueError("The 'name_regex' parameter cannot be None or an empty string")
+
+    async def get_events_selectitons(self) -> dict:
+        return await self.event_repository.get_events_selectitons()
