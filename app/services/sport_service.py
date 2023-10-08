@@ -56,7 +56,7 @@ class SportService:
         return await self.sport_repository.update(sport_id, sport_data)
 
     async def check_and_update_sport_status(self, sport_id: int):
-        active_event_count = await self.event_repository.get_active_events_count_by_sport_active(
+        active_event_count = await self.event_repository.get_active_events_count(
             sport_id
         )
         if active_event_count == 0:
