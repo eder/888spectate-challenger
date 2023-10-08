@@ -91,6 +91,31 @@ class SelectionRepository:
                 f"Error updating selection with ID {selection_id}. Error: {str(e)}"
             )
 
+    async def check_and_update_event_status(self):
+        """
+        Checks the status of all selections for a given event and updates the event status accordingly.
+
+        Args:
+            event_id (int): The ID of the event.
+        """
+
+        # Get event_id value
+        event_id_query = "SELECT event_id FROM selections WHERE id = $1"
+        async with self.db_pool.acquire() as connection:
+            event_id = await connection.fetchval(event_id, event_id)
+
+        # Count the number of active selections for the event
+        count_query = (
+            "SELECT COUNT(*) FROM selections WHERE event_id=$1 AND active=TRUE"
+        )
+        async with self.db_pool.acquire() as connection:
+            active_selection_count = await connection.fetchval(count_query, event_id)
+
+            # If there are no active selections, set the event to inactive
+            if active_selection_count == 0:
+                update_event_query = "UPDATE events SET active=FALSE WHERE id=$1"
+                await connection.execute(update_event_query, event_id)
+
     async def search_selections(self, regex: str) -> List[dict]:
         try:
             # Build the SQL query to search for sports with matching names

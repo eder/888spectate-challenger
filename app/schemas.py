@@ -83,9 +83,9 @@ class SearchFilter(BaseModel):
 
 
 class SearchModel(BaseModel):
-    sport: Optional[SearchFilter]
-    event: Optional[SearchFilter]
-    selection: Optional[SearchFilter]
+    sport: Optional[SportUpdate]
+    event: Optional[EventUpdate] = None
+    selection: Optional[SelectionUpdate] = None
 
 
 class SearchNameModel(BaseModel):

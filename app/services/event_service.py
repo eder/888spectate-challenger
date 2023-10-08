@@ -74,8 +74,8 @@ class EventService:
             dict: The updated event data.
         """
         # Actual start (created at the time the event has the status changed to "Started")
-        if event_data["status"].value == "started":
-            event_data["actual_start"] = datetime.utcnow()
+        # if event_data["status"].value == "started":
+        # event_data["actual_start"] = datetime.utcnow()
 
         def process_field(field, value):
             if (field in ["scheduled_start", "actual_start"]) and isinstance(
@@ -115,19 +115,3 @@ class EventService:
                 criteria.name_regex
             )
         raise ValueError("The 'name_regex' parameter cannot be None or an empty string")
-
-    # async def search_events(self, criteria: SearchFilter):
-    # """
-    # Search events based on specified criteria.
-
-    # Args:
-    # criteria (SearchFilter): The search criteria.
-
-    # Returns:
-    # list: A list of events that match the search criteria.
-    # """
-    # if criteria.min_active_selections:
-    # return await self.event_repository.get_events_with_min_active_selections(
-    # criteria.min_active_selections
-    # )
-    # return await self.event_repository.search_events_by_criteria(criteria)

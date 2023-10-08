@@ -104,3 +104,13 @@ class SportRepository:
 
         except CustomPostgresError as e:
             raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
+
+    async def get_active_events_count(self, sport_id: int) -> int:
+        query = "SELECT COUNT(*) FROM events WHERE sport_id=$1 AND active=TRUE"
+        async with self.db_pool.acquire() as connection:
+            return await connection.fetchval(query, sport_id)
+
+    async def set_sport_inactive(self, sport_id: int):
+        update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
+        async with self.db_pool.acquire() as connection:
+            await connection.execute(update_query, sport_id)

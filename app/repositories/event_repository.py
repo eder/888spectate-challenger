@@ -82,46 +82,6 @@ class EventRepository:
         except CustomPostgresError as e:
             raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
 
-    async def search_events_by_criteria(self, criteria: SearchFilter) -> list:
-        """
-        Search for events based on the given criteria.
-
-        Args:
-            criteria (SearchFilter): The search criteria.
-
-        Returns:
-            list: List of dictionary representations of events that match the criteria.
-        """
-        conditions = []
-        values = []
-
-        if criteria.name_regex:
-            conditions.append("name ~ $1")
-            values.append(criteria.name_regex)
-
-        if criteria.start_time_from and criteria.start_time_to:
-            conditions.append("scheduled_start BETWEEN $2 AND $3")
-
-            start_time_from = criteria.start_time_from
-            start_time_to = criteria.start_time_to
-
-            if isinstance(criteria.start_time_from, str):
-                start_time_from = datetime.fromisoformat(criteria.start_time_from)
-
-            if isinstance(criteria.start_time_to, str):
-                start_time_to = datetime.fromisoformat(criteria.start_time_to)
-
-            values.append(start_time_from)
-            values.append(start_time_to)
-
-        where_clause = " AND ".join(conditions) if conditions else "TRUE"
-
-        query = f"SELECT * FROM events WHERE {where_clause}"
-
-        async with self.db_pool.acquire() as connection:
-            rows = await connection.fetch(query, *values)
-            return [dict(row) for row in rows]
-
     async def get_events_with_min_active_selections(self, min_selections: int):
         """
         Get events with a minimum number of active selections.
@@ -155,3 +115,8 @@ class EventRepository:
 
         except CustomPostgresError as e:
             raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
+
+    async def get_active_events_count(self, sport_id: int) -> int:
+        query = "SELECT COUNT(*) FROM events WHERE sport_id=$1 AND active=TRUE"
+        async with self.db_pool.acquire() as connection:
+            return await connection.fetchval(query, sport_id)

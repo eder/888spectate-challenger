@@ -64,7 +64,12 @@ class SelectionService:
             else selection_data["outcome"]
         )
         res = prepare_data_for_insert(selection_data)
-        return await self.selection_repository.update(selection_id, res)
+        await self.selection_repository.update(selection_id, res)
+        # Todo eu faria essa validação em um fila para vericar todos cancelando e mandar uma mensagem direta para atualizar os dados de evento
+        if selection_data["active"] == False:
+            await self.selection_repository.check_and_update_event_status()
+
+        return self.selection_repository.update(selection_id, res)
 
     async def search_selections(self, criteria: dict) -> dict:
         """

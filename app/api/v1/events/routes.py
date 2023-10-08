@@ -36,10 +36,3 @@ async def search_events(
     criteria: SearchNameModel, service: EventService = Depends(get_event_service)
 ):
     return await service.search_events(criteria)
-
-
-# @events_router.post("/events/search/")
-# async def search_events(
-# criteria: SearchModel, service: EventService = Depends(get_event_service)
-# ):
-# return await service.search_events(criteria.event)

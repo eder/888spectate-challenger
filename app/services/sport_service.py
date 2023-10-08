@@ -1,9 +1,12 @@
 from repositories.sport_repository import SportRepository
+from repositories.event_repository import EventRepository
 from utils.prepare_data_for_insert import prepare_data_for_insert
 
 
 class SportService:
-    def __init__(self, sport_repository: SportRepository):
+    def __init__(
+        self, sport_repository: SportRepository, event_repository: EventRepository
+    ):
         """
         Initialize the SportService.
 
@@ -11,6 +14,7 @@ class SportService:
             sport_repository (SportRepository): An instance of the SportRepository.
         """
         self.sport_repository = sport_repository
+        self.event_repository = event_repository
 
     async def get_all(self):
         """
@@ -46,7 +50,25 @@ class SportService:
             dict: Dictionary representing the updated sport.
         """
         res = prepare_data_for_insert(sport_data)
+        if sport_data["active"] == False:
+            res = await self.check_and_update_sport_status(sport_id)
+
         return await self.sport_repository.update(sport_id, sport_data)
+
+    async def check_and_update_sport_status(self, sport_id: int):
+        active_event_count = await self.event_repository.get_active_events_count(
+            sport_id
+        )
+        if active_event_count == 0:
+            await self.sport_repository.set_sport_inactive(sport_id)
+
+    async def update_event(self, event_id: int, event_data: dict) -> dict:
+        updated_event = await self.event_repository.update(event_id, event_data)
+
+        if "sport_id" in updated_event:
+            await self._check_and_update_sport_status(updated_event["sport_id"])
+
+        return updated_event
 
     async def search_sports(self, criteria: dict) -> dict:
         """

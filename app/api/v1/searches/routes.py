@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from schemas import SearchModel
+from utils.dependencies import get_search_service
+from services.search_service import SearchService
 
-search_router = APIRouter()
+
+searches_router = APIRouter()
 
 
-@search_router.post("/search/")
-async def perform_search(
-    search_criteria: SearchModel, service: SearchService = Depends()
+@searches_router.post("/searches/")
+async def search_events(
+    criteria: SearchModel, service: SearchService = Depends(get_search_service)
 ):
-    results = await service.search(search_criteria)
-    if not results:
-        raise HTTPException(
-            status_code=404, detail="No items found based on the search criteria."
-        )
-    return results
+    return await service.search(criteria.dict())
