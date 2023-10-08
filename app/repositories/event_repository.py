@@ -121,8 +121,7 @@ class EventRepository:
         async with self.db_pool.acquire() as connection:
             return await connection.fetchval(query, sport_id)
 
-
-    async def set_event_as_inactive(self, event_id: int): 
+    async def set_event_as_inactive(self, event_id: int):
         event = {"active": False}
         self.query_builder.add_condition("id", event_id)
         self.query_builder.add_update_data(event)
@@ -135,4 +134,3 @@ class EventRepository:
                 return None
         except CustomPostgresError as e:
             raise Exception(f"Error updating event with ID {event_id}. Error: {str(e)}")
-

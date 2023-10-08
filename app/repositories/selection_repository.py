@@ -91,7 +91,6 @@ class SelectionRepository:
                 f"Error updating selection with ID {selection_id}. Error: {str(e)}"
             )
 
-
     async def get_active_selections_count(self, event_id: int):
         # Count the number of active selections for the event
         count_query = (
@@ -99,15 +98,12 @@ class SelectionRepository:
         )
         async with self.db_pool.acquire() as connection:
             return await connection.fetchval(count_query, event_id)
-    
+
     async def get_event_id(self, selection_id: int):
         # Get event_id value
-        event_id_query = ("SELECT event_id FROM selections WHERE id = $1")
+        event_id_query = "SELECT event_id FROM selections WHERE id = $1"
         async with self.db_pool.acquire() as connection:
             return await connection.fetchval(event_id_query, selection_id)
-    
-
-
 
     async def search_selections(self, regex: str) -> List[dict]:
         try:

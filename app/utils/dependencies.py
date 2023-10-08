@@ -83,7 +83,7 @@ def get_selection_repository() -> SelectionRepository:
 
 def get_selection_service(
     selection_repository: SelectionRepository = Depends(get_selection_repository),
-    event_repository: EventRepository = Depends(get_event_repository)
+    event_repository: EventRepository = Depends(get_event_repository),
 ) -> SelectionService:
     """
     Dependency factory function to get an instance of SelectionService.
@@ -94,7 +94,9 @@ def get_selection_service(
     Returns:
         SelectionService: An instance of SelectionService.
     """
-    return SelectionService(selection_repository=selection_repository, event_repository=event_repository)
+    return SelectionService(
+        selection_repository=selection_repository, event_repository=event_repository
+    )
 
 
 # Searches

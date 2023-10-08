@@ -5,7 +5,11 @@ from utils.prepare_data_for_insert import prepare_data_for_insert
 
 
 class SelectionService:
-    def __init__(self, selection_repository: SelectionRepository, event_repository: EventRepository):
+    def __init__(
+        self,
+        selection_repository: SelectionRepository,
+        event_repository: EventRepository,
+    ):
         """
         Initialize the SelectionService.
 
@@ -72,14 +76,14 @@ class SelectionService:
             await self.check_and_update_event_status(selection_id)
         return await self.selection_repository.update(selection_id, res)
 
-    async def check_and_update_event_status(self, selection_id:int):
-        
+    async def check_and_update_event_status(self, selection_id: int):
         event_id = await self.selection_repository.get_event_id(selection_id)
-        active_selection_count = await self.selection_repository.get_active_selections_count(event_id)
-        
+        active_selection_count = (
+            await self.selection_repository.get_active_selections_count(event_id)
+        )
+
         if active_selection_count == 0:
             await self.event_repository.set_event_as_inactive(event_id)
-
 
     async def search_selections(self, criteria: dict) -> dict:
         """
