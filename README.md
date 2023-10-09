@@ -1,109 +1,41 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/eder/888spectate-challenger/tree/main.svg?style=svg&circle-token=63d47442a2880587f1fa5a9c1818e1a38c40f2f9)](https://dl.circleci.com/status-badge/redirect/gh/eder/888spectate-challenger/tree/main)
 
-# 888Spectate - REST API Documentation
 
-888Spectate is a REST API that manages sports, events, and selections for a sportsbook product. This API is designed with a SOLID-based approach, uses FastAPI for asynchronous development, and relies on PostgreSQL without an ORM. Pytest is used for testing.
 
-## Table of Contents
-- [Introduction](#introduction)
-- [System Requirements](#system-requirements)
-- [API Endpoints](#api-endpoints)
-  - [Create](#create)
-  - [Search](#search)
-  - [Update](#update)
-- [Payload for Search](#payload-for-search)
-- [Getting Started](#getting-started)
-- [Running Tests](#running-tests)
-- [Contributing](#contributing)
-- [License](#license)
 
-## Introduction
+# Sports Management System Documentation
 
-888Spectate is responsible for managing sports, events, and selections in a sportsbook product. Here are the main components:
+## Overview
 
-- **Sport:**
-  - Name
-  - Slug (URL-friendly version of name)
-  - Active (true or false)
+System is an application developed using the FastAPI framework and PostgreSQL database. The project allows for the management and querying of sports, associated events, and selections. Built following best development practices and the SOLID principles, this system is designed to be robust and easily extensible.
 
-- **Event:**
-  - Name
-  - Slug (URL-friendly version of name)
-  - Active (true or false)
-  - Type (preplay or inplay)
-  - Sport
-  - Status (Pending, Started, Ended, or Cancelled)
-  - Scheduled start (UTC datetime)
-  - Actual start (created when the event status changes to "Started")
 
-- **Selection:**
-  - Name
-  - Event
-  - Price (Decimal value, to 2 decimal places)
-  - Active (true or false)
-  - Outcome (Unsettled, Void, Lose, or Win)
+## System Design 
+<img width="768" alt="Screenshot 2023-10-09 at 04 16 14" src="https://github.com/eder/888spectate-challenger/assets/28600/ef372138-69ae-4e56-b193-2d29170c8a41">
 
-## System Requirements
+## Requirements
 
-888Spectate's REST API demonstrates the following functionalities:
+-   [docker](https://docs.docker.com/engine/installation/#supported-platforms)
 
-- Creating sports, events, or selections
-- Searching for sports, events, or selections
-- Updating sports, events, or selections
-- Combining N filters with an AND expression
-- Sports may have multiple events
-- Events may have multiple selections
-- When all selections of an event are inactive, the event becomes inactive
-- When all events of a sport are inactive, the sport becomes inactive
+## Starting 
+In the project root directory, run the command
+```bash
+$ make up
+```
 
-## API Endpoints
+### Tests
 
-### Create
+# Run Tests in Docker
+```
+$ make test
+```
+<img width="1515" alt="Screenshot 2023-10-09 at 04 10 37" src="https://github.com/eder/888spectate-challenger/assets/28600/e9828b5b-62f5-4adc-b2b8-6e979ef24bca">
 
-- **POST /api/v1/sports/**: Create a new sport.
-- **POST /api/v1/events/**: Create a new event.
-- **POST /api/v1/selections/**: Create a new selection.
 
-### Search
+## Project Structure  
 
-- **GET /api/v1/events/search/**: Search for sports, events, or selections with specific criteria.
+<img width="1016" alt="Screenshot 2023-10-09 at 03 49 17" src="https://github.com/eder/888spectate-challenger/assets/28600/8ff8cd5f-4af5-47cf-a2b8-f94be55c4ec9">
 
-### Update
-
-- **PUT /api/v1/sports/{sport_id}/**: Update an existing sport.
-- **PUT /api/v1/events/{event_id}/**: Update an existing event.
-- **PUT /api/v1/selections/{selection_id}/**: Update an existing selection.
-
-## Payload for Search
-
-This is the payload for searching for sports, events, or selections within a specific context:
-
-```json
-/api/v1/events/search/
-{
-  "sport": {
-    "name_regex": "string",
-    "min_active_count": 0,
-    "start_time_from": "2023-10-07T13:26:44.192Z",
-    "start_time_to": "2023-10-07T13:26:44.192Z",
-    "timezone": "string",
-    "min_active_selections": 0
-  },
-  "event": {
-    "name_regex": "string",
-    "min_active_count": 0,
-    "start_time_from": "2023-10-07T13:26:44.192Z",
-    "start_time_to": "2023-10-07T13:26:44.192Z",
-    "timezone": "string",
-    "min_active_selections": 0
-  },
-  "selection": {
-    "name_regex": "string",
-    "min_active_count": 0,
-    "start_time_from": "2023-10-07T13:26:44.192Z",
-    "start_time_to": "2023-10-07T13:26:44.192Z",
-    "timezone": "string",
-    "min_active_selections": 0
-  }
-}
-
+## Swagger
+- The `swagger` all APIs.
+- Visit `http://0.0.0.0:8000/docs#/ to access the playground
+  <img width="1674" alt="Screenshot 2023-10-09 at 03 58 17" src="https://github.com/eder/888spectate-challenger/assets/28600/d13b9f2e-9a6a-42db-927d-9ca96a4a3bc4">
