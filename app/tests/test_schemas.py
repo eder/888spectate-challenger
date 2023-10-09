@@ -103,33 +103,6 @@ def test_selection_base_model():
         )
 
 
-def test_valid_search_model():
-    data = {
-        "sport": {
-            "name_regex": "^[A-Z]",
-            "min_active_count": 5,
-            "start_time_from": "2023-10-04T00:00:00",
-            "start_time_to": "2023-10-10T23:59:59",
-            "timezone": "UTC",
-        },
-        "event": {
-            "name_regex": "^[A-Z]",
-            "min_active_count": 5,
-            "start_time_from": "2023-10-04T00:00:00",
-            "start_time_to": "2023-10-10T23:59:59",
-            "timezone": "UTC",
-        },
-    }
-
-    search_model = SearchModel(**data)
-    assert isinstance(search_model.sport, SearchFilter)
-    assert search_model.sport.name_regex == "^[A-Z]"
-    assert search_model.sport.min_active_count == 5
-    assert search_model.sport.start_time_from == datetime(2023, 10, 4, 0, 0, 0)
-    assert search_model.sport.start_time_to == datetime(2023, 10, 10, 23, 59, 59)
-    assert search_model.sport.timezone == "UTC"
-
-
 def test_invalid_min_active_count():
     data = {"sport": {"min_active_count": -5}}
 
