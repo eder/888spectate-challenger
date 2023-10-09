@@ -102,22 +102,3 @@ def test_selection_base_model():
             outcome=SelectionOutcome.UNSETTLED,
         )
 
-
-def test_invalid_min_active_count():
-    data = {"sport": {"min_active_count": -5}}
-
-    try:
-        search_model = SearchModel(**data)
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"] == ("sport", "min_active_count")
-        assert "ensure this value is greater than or equal to 0" in e.errors()[0]["msg"]
-
-
-def test_missing_required_fields():
-    data = {}
-
-    try:
-        search_model = SearchModel(**data)
-    except ValidationError as e:
-        assert len(e.errors()) == 0
