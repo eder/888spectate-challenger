@@ -1,7 +1,9 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/eder/888spectate-challenger/tree/main.svg?style=svg&circle-token=63d47442a2880587f1fa5a9c1818e1a38c40f2f9)](https://dl.circleci.com/status-badge/redirect/gh/eder/888spectate-challenger/tree/main)
 
+## Find internal nodes
+Let's assume we have a generic tree composed of consecutive integers (so if there is a 6 all numbers starting from and including 0 up to it also need to exist on the tree), such as follows:
 
-
+[code-challenger](https://github.com/eder/888spectate-challenger/tree/main/code-challenger)
 
 # Sports Management System Documentation
 
