@@ -99,7 +99,7 @@ class EventService:
         try:
             event["slug"] = to_slug(event["name"])
 
-            if event["status"] == "started":
+            if "status" in event and event["status"] == "started":
                 event["actual_start"] = datetime.utcnow()
 
             def process_field(field, value):
