@@ -179,8 +179,6 @@ class SportService:
                 )
 
             query = " ".join(query_parts)
-            print(query)
-            print(params)
             return await self.sport_repository.filter_sports(query, params)
         except Exception as e:
             self.logger.error(f"Error searching for sports: {e}")
