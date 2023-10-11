@@ -4,7 +4,7 @@ from datetime import datetime
 from db.database import get_db_pool, CustomPostgresError
 from utils.query_builder import QueryBuilder
 from .errors import RepositoryError
-
+from schemas import EventType
 
 class EventRepository:
     def __init__(self, db_pool: get_db_pool, logger: logging.Logger):
