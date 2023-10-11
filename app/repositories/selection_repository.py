@@ -148,7 +148,7 @@ class SelectionRepository:
             )
             raise RepositoryError(f"Error: {str(e)}")
 
-    async def search_selections(self, regex: str) -> List[dict]:
+    async def filter_selections(self, query, params) -> List[dict]:
         """
         Search selections based on a regex pattern.
 
@@ -162,11 +162,33 @@ class SelectionRepository:
             Exception: If there's an error during the search.
         """
         try:
-            query = self.query_builder.build_regex_query("name", regex)
-            self.logger.info(f"Searching for selections with regex: {regex}")
             async with self.db_pool.acquire() as connection:
-                rows = await connection.fetch(query, regex)
+                rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]
         except CustomPostgresError as e:
             self.logger.error(f"Error searching selections with regex: {e}")
             raise Exception(f"Error searching selections: {str(e)}")
+
+
+
+    async  def get_selections_by_event_id(self, event_id: int) -> List[dict]:
+        query = f"SELECT * FROM selections WHERE event_id = {event_id};"
+        try:
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query)
+                return [dict(row) for row in rows]
+        except CustomPostgresError as e:
+            self.logger.error(f"Error getting selections with event ID: {e}")
+            raise Exception(f"Error getting selections: {str(e)}")
+
+    
+    async  def get_selections_by_sport_id(self, sport_id: int) -> List[dict]:
+        query = f"SELECT s.* FROM selections s JOIN events e ON s.event_id = e.id WHERE e.sport_id= {sport_id};"
+        try:
+            async with self.db_pool.acquire() as connection:
+                rows = await connection.fetch(query)
+                return [dict(row) for row in rows]
+        except CustomPostgresError as e:
+            self.logger.error(f"Error getting selections with sport ID: {e}")
+            raise Exception(f"Error getting selections: {str(e)}")
+

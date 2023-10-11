@@ -95,9 +95,9 @@ class SportService:
             )
             raise
 
-    async def search_sports(self, criteria: dict) -> dict:
+    async def filter_sports(self, criteria: dict) -> dict:
         """
-        Asynchronously performs a sports search based on the provided criteria. The search
+        Asynchronously performs a sports search based on the provided criteria. The filter
         can be filtered by sport name using a regular expression and further filtered 
         based on the active status of the sport.
 
@@ -169,7 +169,7 @@ class SportService:
             query = " ".join(query_parts)
                         
 
-            return await self.sport_repository.search_sports(query, params)
+            return await self.sport_repository.filter_sports(query, params)
             raise ValueError(
                 "The 'name_regex' parameter cannot be None or an empty string"
             )

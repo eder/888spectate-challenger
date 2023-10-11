@@ -35,15 +35,6 @@ class EventBase(BaseModel):
     scheduled_start: datetime
     actual_start: datetime
 
-
-class EventFilter(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)]
-    active: Optional[bool] = None
-    threshold: Optional[int] = 1
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-
-
 class SportBase(BaseModel):
     name: str
     active: bool
@@ -67,7 +58,6 @@ class SelectionBase(BaseModel):
     active: bool
     outcome: SelectionOutcome
 
-
 class SelectionUpdate(BaseModel):
     name: Optional[str] = None
     event_id: Optional[int] = None
@@ -75,19 +65,13 @@ class SelectionUpdate(BaseModel):
     active: Optional[bool] = None
     outcome: Optional[SelectionOutcome] = None
 
+class SelectionFilter(BaseModel):
+    name_regex: Optional[constr(strip_whitespace=True)] =  None
+    active: Optional[bool] = None
 
-class SearchFilter(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)]
+class Filters(BaseModel):
+    name_regex: Optional[constr(strip_whitespace=True)] =  None
     threshold: Optional[int] = 1
-    start_time_from: Optional[datetime]
-    start_time_to: Optional[datetime]
-    timezone: Optional[str]
-
-class SearchModel(BaseModel):
-    sport: Optional[SportUpdate]
-    event: Optional[EventUpdate] = None
-    selection: Optional[SelectionUpdate] = None
-
-
-class SearchNameModel(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)]
+    start_time_from: Optional[datetime] = None
+    start_time_to: Optional[datetime] = None
+    timezone: Optional[str] = None

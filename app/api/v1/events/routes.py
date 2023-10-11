@@ -12,7 +12,7 @@ Dependencies:
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import EventBase, EventUpdate, EventFilter, SearchNameModel
+from schemas import EventBase, EventUpdate, Filters
 from utils.dependencies import get_event_service, get_logger
 from services.event_service import EventService
 
@@ -67,33 +67,17 @@ async def update_event(
             status_code=500, detail=f"Internal server error updating event {event_id}."
         )
 
-
-@events_router.post("/events/search/")
+@events_router.post("/events/filters/")
 async def filter_events(
-    criteria: SearchNameModel,
+    criteria: Filters,
     service: EventService = Depends(get_event_service),
     logger: logging.Logger = Depends(get_logger),
 ):
     try:
-        logger.info("Searching for events based on given criteria...")
+        logger.info("Filter for events based on given criteria...")
         return await service.filter_events(criteria.dict())
     except Exception as e:
         logger.error(f"Error searching for events: {e}")
         raise HTTPException(
             status_code=500, detail="Internal server error searching for events."
-        )
-
-
-@events_router.get("/events/selections")
-async def get_events_selections(
-    service: EventService = Depends(get_event_service),
-    logger: logging.Logger = Depends(get_logger),
-):
-    try:
-        logger.info("Fetching events' selections...")
-        return await service.get_events_selections()
-    except Exception as e:
-        logger.error(f"Error fetching events' selections: {e}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error fetching events' selections."
         )

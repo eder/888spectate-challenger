@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import SportBase, SportUpdate, SearchFilter
+from schemas import SportBase, SportUpdate, Filters
 from services.sport_service import SportService
 from utils.dependencies import get_sport_service, get_logger
 from utils.slugify import to_slug
@@ -61,15 +61,15 @@ async def updating_sport(
         )
 
 
-@sports_router.post("/sports/search/")
-async def search_sports(
-    criteria: SearchFilter,
+@sports_router.post("/sports/filters/")
+async def filter_sports(
+    criteria: Filters,
     service: SportService = Depends(get_sport_service),
     logger: logging.Logger = Depends(get_logger),
 ):
     try:
-        logger.info("Searching for sports based on given criteria...")
-        return await service.search_sports(criteria.dict())
+        logger.info("Filter for sports based on given criteria...")
+        return await service.filter_sports(criteria.dict())
     except Exception as e:
         logger.error(f"Error searching for sports: {e}")
         raise HTTPException(

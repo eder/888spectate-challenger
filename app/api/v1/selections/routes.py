@@ -12,7 +12,7 @@ Dependencies:
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import SelectionBase, SelectionUpdate, SearchNameModel
+from schemas import SelectionBase, SelectionUpdate,SelectionFilter 
 from services.selection_service import SelectionService
 from utils.custom_exceptions import CreationError, ValidationError, ForeignKeyError
 from utils.dependencies import get_selection_service, get_logger
@@ -81,15 +81,49 @@ async def update_selection(
         )
 
 
-@selections_router.post("/selections/search/")
-async def search_selections(
-    criteria: SearchNameModel,
+@selections_router.get("/selections/event/{event_id}")
+async def get_selections_by_event_id(
+    event_id: int,
     service: SelectionService = Depends(get_selection_service),
     logger: logging.Logger = Depends(get_logger),
 ):
     try:
-        logger.info("Searching for selections based on given criteria...")
-        return await service.search_selections(criteria)
+        logger.info(f"Get selection with event ID {event_id}...")
+        return  await service.get_selections_by_event_id(event_id)
+    except Exception as e:
+        logger.error(f"Error fetching selections with event ID {event_id} - {e}")
+        raise HTTPException(
+            status_code=500, detail="Internal server error fetching selections by event ID"
+    )
+
+
+@selections_router.get("/selections/sport/{sport_id}")
+async def get_selections_by_sport_id(
+    sport_id: int,
+    service: SelectionService = Depends(get_selection_service),
+    logger: logging.Logger = Depends(get_logger),
+):
+    try:
+        logger.info(f"Get selection with sport ID {sport_id}...")
+        return  await service.get_selections_by_sport_id(sport_id)
+    except Exception as e:
+        logger.error(f"Error fetching selections with sport ID {sport_id} - {e}")
+        raise HTTPException(
+            status_code=500, detail="Internal server error fetching selections by with Sport ID"
+    )
+
+
+
+
+@selections_router.post("/selections/filter/")
+async def filter_selections(
+    criteria: SelectionFilter,
+    service: SelectionService = Depends(get_selection_service),
+    logger: logging.Logger = Depends(get_logger),
+):
+    try:
+        logger.info("Filtering for selections")
+        return await service.filter_selections(criteria.dict())
     except Exception as e:
         logger.error(f"Error searching for selections: {e}")
         raise HTTPException(
