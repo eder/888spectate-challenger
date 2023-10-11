@@ -1,8 +1,9 @@
+import logging
+
 from datetime import datetime
-from schemas import EventType, EventStatus, SearchFilter
 from db.database import get_db_pool, CustomPostgresError
 from utils.query_builder import QueryBuilder
-import logging
+from .errors import RepositoryError
 
 
 class EventRepository:
@@ -124,39 +125,8 @@ class EventRepository:
                 f"Error fetching events with min active selections: {e}"
             )
 
-    async def search_events_with_regex(self, criteria):
+    async def filter_events(self, query, params):
         try:
-            params = []
-
-            query = (
-                "SELECT e.id, e.name, e.scheduled_start "
-                "FROM events e "
-                "JOIN selections sel ON e.id = sel.event_id "
-                "WHERE sel.active = TRUE"
-            )
-
-            if "name_regex" in criteria and criteria["name_regex"]:
-                query += " AND e.name ~ $" + str(len(params) + 1)
-                params.append(criteria["name_regex"])
-
-            if "active" in criteria and isinstance(criteria["active"], bool):
-                query += " AND e.active = $" + str(len(params) + 1)
-                params.append(criteria["active"])
-
-            if criteria.get("start_time") and criteria.get("end_time"):
-                query += (
-                    " AND e.scheduled_start BETWEEN $"
-                    + str(len(params) + 1)
-                    + " AND $"
-                    + str(len(params) + 2)
-                )
-                params.extend([criteria["start_time"], criteria["end_time"]])
-
-            threshold_value = criteria.get("threshold", 0)
-            if threshold_value:
-                query += " GROUP BY e.id HAVING COUNT(*) > $" + str(len(params) + 1)
-                params.append(threshold_value)
-
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]

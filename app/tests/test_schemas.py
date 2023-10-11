@@ -8,8 +8,6 @@ from schemas import (
     EventBase,
     SelectionOutcome,
     SelectionBase,
-    SearchModel,
-    SearchFilter,
 )
 
 
@@ -35,11 +33,10 @@ def test_sport_base_model():
     sport = SportBase(name="Soccer", slug="soccer", active=True)
 
     assert sport.name == "Soccer"
-    assert sport.slug == "soccer"
     assert sport.active == True
 
     with pytest.raises(ValidationError):
-        invalid_sport = SportBase(name="Soccer", slug="soccer")
+        invalid_sport = SportBase(name="Soccer")
 
 
 def test_event_base_model():
@@ -47,7 +44,6 @@ def test_event_base_model():
     actual_start = datetime.now()
     event = EventBase(
         name="Match 1",
-        slug="match-1",
         active=True,
         type=EventType.PREPLAY,
         status=EventStatus.STARTED,
@@ -57,7 +53,6 @@ def test_event_base_model():
     )
 
     assert event.name == "Match 1"
-    assert event.slug == "match-1"
     assert event.active == True
     assert event.type == EventType.PREPLAY
     assert event.status == EventStatus.STARTED
@@ -101,4 +96,3 @@ def test_selection_base_model():
             active=True,
             outcome=SelectionOutcome.UNSETTLED,
         )
-

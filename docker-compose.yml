@@ -13,7 +13,8 @@ services:
       ['./bin/wait-for-it.sh', 'db:5432', '--', './bin/start-server.sh']
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
-
+    volumes:
+      - .:/www/
   db:
     image: postgres:12
     environment:
@@ -22,7 +23,7 @@ services:
       POSTGRES_DB: sportsbook_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    ports:
+      - "5432:5432"
 volumes:
   postgres_data:
-

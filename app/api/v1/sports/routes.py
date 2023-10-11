@@ -1,20 +1,11 @@
-"""
-sports_router module.
-
-This module provides a set of API endpoints related to sports management.
-It allows you to create, retrieve, update, and search sports, as well as fetching associated events.
-
-Dependencies:
-    - FastAPI
-    - SportService
-    - Schema models for data validation and serialization
-"""
-
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import SportBase, SportUpdate, SearchNameModel, SportFilter
+from schemas import SportBase, SportUpdate, Filters
 from services.sport_service import SportService
 from utils.dependencies import get_sport_service, get_logger
+from utils.slugify import to_slug
+
 
 sports_router = APIRouter()
 
@@ -42,7 +33,7 @@ async def create_sport(
 ):
     try:
         logger.info("Creating a new sport...")
-        return await service.create(sport)
+        return await service.create(sport.dict())
     except Exception as e:
         logger.error(f"Error creating sport: {e}")
         raise HTTPException(
@@ -70,32 +61,17 @@ async def updating_sport(
         )
 
 
-@sports_router.post("/sports/search/")
-async def search_sports(
-    criteria: SportFilter,
+@sports_router.post("/sports/filters/")
+async def filter_sports(
+    criteria: Filters,
     service: SportService = Depends(get_sport_service),
     logger: logging.Logger = Depends(get_logger),
 ):
-    try:
-        logger.info("Searching for sports based on given criteria...")
-        return await service.search_sports(criteria.dict())
-    except Exception as e:
-        logger.error(f"Error searching for sports: {e}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error searching for sports."
-        )
-
-
-@sports_router.get("/sports/events")
-async def get_sports_events(
-    service: SportService = Depends(get_sport_service),
-    logger: logging.Logger = Depends(get_logger),
-):
-    try:
-        logger.info("Fetching sports' events...")
-        return await service.get_sports_events()
-    except Exception as e:
-        logger.error(f"Error fetching sports' events: {e}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error fetching sports' events."
-        )
+    # try:
+    # logger.info("Filter for sports based on given criteria...")
+    return await service.filter_sports(criteria.dict())
+    # except Exception as e:
+    # logger.error(f"Error searching for sports: {e}")
+    # raise HTTPException(
+    # status_code=500, detail="Internal server error searching for sports."
+    # )

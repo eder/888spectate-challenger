@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+FROM python:3.11 
 
 RUN apt-get -y update; apt-get -y install postgresql-client
 

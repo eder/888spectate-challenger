@@ -9,8 +9,8 @@ from api.v1.selections.routes import selections_router
 
 app = FastAPI()
 
-app.include_router(events_router, prefix="/api/v1", tags=["events"])
 app.include_router(sports_router, prefix="/api/v1", tags=["sports"])
+app.include_router(events_router, prefix="/api/v1", tags=["events"])
 app.include_router(selections_router, prefix="/api/v1", tags=["selections"])
 
 
