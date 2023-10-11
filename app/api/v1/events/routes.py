@@ -12,7 +12,7 @@ Dependencies:
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import EventBase, EventUpdate, EventFilter
+from schemas import EventBase, EventUpdate, EventFilter, SearchNameModel
 from utils.dependencies import get_event_service, get_logger
 from services.event_service import EventService
 
@@ -70,7 +70,7 @@ async def update_event(
 
 @events_router.post("/events/search/")
 async def filter_events(
-    criteria: EventFilter,
+    criteria: SearchNameModel,
     service: EventService = Depends(get_event_service),
     logger: logging.Logger = Depends(get_logger),
 ):

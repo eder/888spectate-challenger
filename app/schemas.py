@@ -18,7 +18,6 @@ class EventStatus(Enum):
 
 class EventUpdate(BaseModel):
     name: Optional[str] = None
-    slug: Optional[str] = None
     active: Optional[bool] = None
     type: Optional[EventType] = None
     sport_id: Optional[int] = None
@@ -29,7 +28,6 @@ class EventUpdate(BaseModel):
 
 class EventBase(BaseModel):
     name: str
-    slug: str
     active: bool
     type: EventType
     status: EventStatus
@@ -48,21 +46,12 @@ class EventFilter(BaseModel):
 
 class SportBase(BaseModel):
     name: str
-    slug: str
     active: bool
 
 
 class SportUpdate(BaseModel):
     name: Optional[str] = None
-    slug: Optional[str] = None
     active: Optional[bool] = None
-
-
-class SportFilter(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)]
-    active: Optional[bool] = None
-    threshold: Optional[int] = 1
-
 
 class SelectionOutcome(Enum):
     UNSETTLED = "unsettled"
@@ -89,12 +78,10 @@ class SelectionUpdate(BaseModel):
 
 class SearchFilter(BaseModel):
     name_regex: Optional[constr(strip_whitespace=True)]
-    min_active_count: Optional[conint(ge=0)]
+    threshold: Optional[int] = 1
     start_time_from: Optional[datetime]
     start_time_to: Optional[datetime]
     timezone: Optional[str]
-    min_active_selections: int = None
-
 
 class SearchModel(BaseModel):
     sport: Optional[SportUpdate]

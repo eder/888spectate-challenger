@@ -2,6 +2,7 @@ from datetime import datetime
 from schemas import EventType, EventStatus, SearchFilter
 from repositories.event_repository import EventRepository
 from utils.prepare_data_for_insert import prepare_data_for_insert
+from utils.slugify import to_slug
 import logging
 
 
@@ -51,6 +52,7 @@ class EventService:
             Exception: If there's an error creating a new event.
         """
         try:
+            
             scheduled_start = datetime.fromisoformat(
                 event["scheduled_start"].isoformat()
             )
@@ -67,7 +69,7 @@ class EventService:
             )
             event_data = {
                 "name": event["name"],
-                "slug": event["slug"],
+                "slug": to_slug(event['name']),
                 "active": event["active"],
                 "type": type_value,
                 "sport_id": event["sport_id"],
@@ -80,7 +82,7 @@ class EventService:
             self.logger.error(f"Error creating event: {e}")
             raise
 
-    async def update(self, event_id: int, event_data: dict) -> dict:
+    async def update(self, event_id: int, event: dict) -> dict:
         """
         Update an event based on the given event_id.
 
@@ -95,9 +97,11 @@ class EventService:
             Exception: If there's an error updating the event.
         """
         try:
-            if event_data["status"].value == "started":
-                event_data["actual_start"] = datetime.utcnow()
+            event['slug'] = to_slug(event['name'])
 
+            if event["status"] == "started":
+                event["actual_start"] = datetime.utcnow()
+                
             def process_field(field, value):
                 if (field in ["scheduled_start", "actual_start"]) and isinstance(
                     value, str
@@ -111,7 +115,7 @@ class EventService:
 
             processed_event = {
                 key: process_field(key, value)
-                for key, value in event_data.items()
+                for key, value in event.items()
                 if value is not None
             }
             return_event = prepare_data_for_insert(processed_event)

@@ -47,7 +47,6 @@ def test_event_base_model():
     actual_start = datetime.now()
     event = EventBase(
         name="Match 1",
-        slug="match-1",
         active=True,
         type=EventType.PREPLAY,
         status=EventStatus.STARTED,
@@ -57,7 +56,6 @@ def test_event_base_model():
     )
 
     assert event.name == "Match 1"
-    assert event.slug == "match-1"
     assert event.active == True
     assert event.type == EventType.PREPLAY
     assert event.status == EventStatus.STARTED
