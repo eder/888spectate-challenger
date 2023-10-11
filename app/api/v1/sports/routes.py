@@ -67,12 +67,11 @@ async def filter_sports(
     service: SportService = Depends(get_sport_service),
     logger: logging.Logger = Depends(get_logger),
 ):
-    try:
-        logger.info("Filter for sports based on given criteria...")
-        return await service.filter_sports(criteria.dict())
-    except Exception as e:
-        logger.error(f"Error searching for sports: {e}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error searching for sports."
-        )
-
+    # try:
+    # logger.info("Filter for sports based on given criteria...")
+    return await service.filter_sports(criteria.dict())
+    # except Exception as e:
+    # logger.error(f"Error searching for sports: {e}")
+    # raise HTTPException(
+    # status_code=500, detail="Internal server error searching for sports."
+    # )

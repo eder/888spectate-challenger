@@ -5,6 +5,7 @@ from db.database import get_db_pool
 from schemas import SportBase
 from utils.query_builder import QueryBuilder
 
+
 class SportRepository:
     def __init__(self, db_pool: get_db_pool, logger: logging.Logger):
         """
@@ -35,9 +36,7 @@ class SportRepository:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
         except Exception as e:
-            self.logger.error(
-                f"Error fetching all sports: {str(e)}"
-            )  
+            self.logger.error(f"Error fetching all sports: {str(e)}")
             raise RepositoryError(f"Error: {str(e)}")
 
     async def create(self, sport: dict) -> dict:
@@ -95,9 +94,8 @@ class SportRepository:
                 raise Exception("Invalid sport ID provided.") from e
             raise Exception(f"Error updating sport with ID {sport_id}. Error: {str(e)}")
 
-    async def search_sports(self, query, params) -> List[dict]:
+    async def filter_sports(self, query, params) -> List[dict]:
         try:
-   
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]
@@ -112,17 +110,6 @@ class SportRepository:
 
         Args:
             sport_id (int): The ID of the sport to be marked as inactive.
-        """
-        update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
-        async with self.db_pool.acquire() as connection:
-            await connection.execute(update_query, sport_id)
-
-    async def filter_sports(self, threshold: int):
-        """
-        Filter sports based on a threshold value.
-
-        Args:
-            threshold (int): The threshold value used for filtering.
         """
         update_query = "UPDATE sports SET active=FALSE WHERE id=$1"
         async with self.db_pool.acquire() as connection:

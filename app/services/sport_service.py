@@ -5,12 +5,13 @@ from repositories.event_repository import EventRepository
 from utils.prepare_data_for_insert import prepare_data_for_insert
 from utils.slugify import to_slug
 
+
 class SportService:
     def __init__(
         self,
         sport_repository: SportRepository,
         event_repository: EventRepository,
-        logger: logging.Logger
+        logger: logging.Logger,
     ):
         """
         Initialize the SportService.
@@ -50,9 +51,9 @@ class SportService:
         """
         try:
             sport_data = {
-                "name": sport['name'],
-                "slug": to_slug(sport['name']),
-                "active": sport['active']
+                "name": sport["name"],
+                "slug": to_slug(sport["name"]),
+                "active": sport["active"],
             }
             return await self.sport_repository.create(sport_data)
         except Exception as e:
@@ -71,7 +72,7 @@ class SportService:
             dict: Dictionary representing the updated sport.
         """
         try:
-            sport['slug'] = to_slug(sport['name']) 
+            sport["slug"] = to_slug(sport["name"])
             res = prepare_data_for_insert(sport)
             if sport["active"] == False:
                 await self.check_and_update_sport_status(sport_id)
@@ -98,13 +99,13 @@ class SportService:
     async def filter_sports(self, criteria: dict) -> dict:
         """
         Asynchronously performs a sports search based on the provided criteria. The filter
-        can be filtered by sport name using a regular expression and further filtered 
+        can be filtered by sport name using a regular expression and further filtered
         based on the active status of the sport.
 
         Args:
             criteria (dict): A dictionary containing search criteria with the following optional keys:
                 - name_regex (str): A regular expression to filter sports by name.
-                - active (bool): Filter sports based on their active status. 
+                - active (bool): Filter sports based on their active status.
                 - threshold (int, optional): The minimum number of events a sport must have to be included in the results.
                                  Default value is 1.
 
@@ -116,14 +117,14 @@ class SportService:
 
         Note:
             The function builds a dynamic SQL query based on the criteria provided.
-        """        
+        """
         try:
             query_parts = [
                 "WITH ActiveEvents AS (",
                 "    SELECT s.id, s.name, COUNT(e.id) as threshold",
                 "    FROM sports s",
                 "    LEFT JOIN events e ON s.id = e.sport_id AND e.active = TRUE",
-                "    WHERE 1=1"
+                "    WHERE 1=1",
             ]
 
             params = []
@@ -136,43 +137,51 @@ class SportService:
                 query_parts.append("    AND s.active = $" + str(len(params) + 1))
                 params.append(criteria["active"])
 
+            query_parts.append("    GROUP BY s.id, s.name")
+
             threshold_value = criteria.get("threshold", 1)
             if threshold_value:
-                query_parts.append("    GROUP BY s.id, s.name")
                 query_parts.append("    HAVING COUNT(e.id) > $" + str(len(params) + 1))
                 params.append(threshold_value)
-            else:
-                query_parts.append("    GROUP BY s.id, s.name")
 
-            if criteria.get("start_time") and criteria.get("end_time"):
-                query_parts.extend([
-                    "),",
-                    "TimeRangeEvents AS (",
-                    "    SELECT DISTINCT s.id, s.name",
-                    "    FROM sports s",
-                    "    JOIN events e ON s.id = e.sport_id",
-                    f"    WHERE e.actual_start BETWEEN ${str(len(params) + 1)} AND ${str(len(params) + 2)})",
-                ])
-                params.extend([criteria["start_time_from"], criteria["start_time_to"]])
-                query_parts.extend([
-                    "SELECT a.id, a.name, COALESCE(a.threshold, 0) as threshold FROM ActiveEvents a",
-                    "UNION",
-                    "SELECT t.id, t.name, 0 as threshold FROM TimeRangeEvents t",
-                    "WHERE NOT EXISTS (SELECT 1 FROM ActiveEvents a WHERE a.id = t.id)"
-                ])
+            if criteria.get("start_time_from") and criteria.get("start_time_to"):
+                query_parts.extend(
+                    [
+                        "),",
+                        "TimeRangeEvents AS (",
+                        "    SELECT DISTINCT s.id, s.name",
+                        "    FROM sports s",
+                        "    JOIN events e ON s.id = e.sport_id",
+                        f"    WHERE e.actual_start AT TIME ZONE ${str(len(params) + 3)} BETWEEN ${str(len(params) + 1)} AND ${str(len(params) + 2)})",
+                    ]
+                )
+                params.extend(
+                    [
+                        criteria["start_time_from"],
+                        criteria["start_time_to"],
+                        criteria.get("timezone", "UTC"),
+                    ]
+                )
+                query_parts.extend(
+                    [
+                        "SELECT a.id, a.name, COALESCE(a.threshold, 0) as threshold FROM ActiveEvents a",
+                        "UNION",
+                        "SELECT t.id, t.name, 0 as threshold FROM TimeRangeEvents t",
+                        "WHERE NOT EXISTS (SELECT 1 FROM ActiveEvents a WHERE a.id = t.id)",
+                    ]
+                )
             else:
-                query_parts.extend([
-                    ")",
-                    "SELECT a.id, a.name, COALESCE(a.threshold, 0) as threshold FROM ActiveEvents a"
-                ])
+                query_parts.extend(
+                    [
+                        ")",
+                        "SELECT a.id, a.name, COALESCE(a.threshold, 0) as threshold FROM ActiveEvents a",
+                    ]
+                )
 
             query = " ".join(query_parts)
-                        
-
+            print(query)
+            print(params)
             return await self.sport_repository.filter_sports(query, params)
-            raise ValueError(
-                "The 'name_regex' parameter cannot be None or an empty string"
-            )
         except Exception as e:
             self.logger.error(f"Error searching for sports: {e}")
             raise

@@ -169,9 +169,7 @@ class SelectionRepository:
             self.logger.error(f"Error searching selections with regex: {e}")
             raise Exception(f"Error searching selections: {str(e)}")
 
-
-
-    async  def get_selections_by_event_id(self, event_id: int) -> List[dict]:
+    async def get_selections_by_event_id(self, event_id: int) -> List[dict]:
         query = f"SELECT * FROM selections WHERE event_id = {event_id};"
         try:
             async with self.db_pool.acquire() as connection:
@@ -181,8 +179,7 @@ class SelectionRepository:
             self.logger.error(f"Error getting selections with event ID: {e}")
             raise Exception(f"Error getting selections: {str(e)}")
 
-    
-    async  def get_selections_by_sport_id(self, sport_id: int) -> List[dict]:
+    async def get_selections_by_sport_id(self, sport_id: int) -> List[dict]:
         query = f"SELECT s.* FROM selections s JOIN events e ON s.event_id = e.id WHERE e.sport_id= {sport_id};"
         try:
             async with self.db_pool.acquire() as connection:
@@ -191,4 +188,3 @@ class SelectionRepository:
         except CustomPostgresError as e:
             self.logger.error(f"Error getting selections with sport ID: {e}")
             raise Exception(f"Error getting selections: {str(e)}")
-

@@ -51,7 +51,6 @@ class EventService:
             Exception: If there's an error creating a new event.
         """
         try:
-            
             scheduled_start = datetime.fromisoformat(
                 event["scheduled_start"].isoformat()
             )
@@ -68,7 +67,7 @@ class EventService:
             )
             event_data = {
                 "name": event["name"],
-                "slug": to_slug(event['name']),
+                "slug": to_slug(event["name"]),
                 "active": event["active"],
                 "type": type_value,
                 "sport_id": event["sport_id"],
@@ -96,11 +95,11 @@ class EventService:
             Exception: If there's an error updating the event.
         """
         try:
-            event['slug'] = to_slug(event['name'])
+            event["slug"] = to_slug(event["name"])
 
             if event["status"] == "started":
                 event["actual_start"] = datetime.utcnow()
-                
+
             def process_field(field, value):
                 if (field in ["scheduled_start", "actual_start"]) and isinstance(
                     value, str
@@ -146,7 +145,7 @@ class EventService:
                 "    SELECT e.id, e.name, COUNT(s.id) as active_selections_count",
                 "    FROM events e",
                 "    LEFT JOIN selections s ON e.id = s.event_id AND s.active = TRUE",
-                "    WHERE 1=1"
+                "    WHERE 1=1",
             ]
 
             params = []
@@ -159,36 +158,42 @@ class EventService:
                 query_parts.append("    AND e.active = $" + str(len(params) + 1))
                 params.append(criteria["active"])
 
+            query_parts.append("    GROUP BY e.id, e.name")
+
             threshold_value = criteria.get("threshold", 1)
             if threshold_value:
-                query_parts.append("    GROUP BY e.id, e.name")
                 query_parts.append("    HAVING COUNT(s.id) >= $" + str(len(params) + 1))
                 params.append(threshold_value)
-            else:
-                query_parts.append("    GROUP BY e.id, e.name")
 
             if criteria.get("start_time") and criteria.get("end_time"):
-                query_parts.extend([
-                    "),",
-                    "TimeRangeEvents AS (",
-                    "    SELECT * FROM events",
-                    f"    WHERE actual_start BETWEEN ${str(len(params) + 1)} AND ${str(len(params) + 2)})",
-                ])
-                params.extend([criteria["start_time"], criteria["end_time"]])
-                query_parts.extend([
-                    "SELECT a.id, a.name, COALESCE(a.active_selections_count, 0) as active_selections_count FROM ActiveSelections a",
-                    "UNION ALL",
-                    "SELECT t.id, t.name, 0 as active_selections_count FROM TimeRangeEvents t",
-                    "WHERE NOT EXISTS (SELECT 1 FROM ActiveSelections a WHERE a.id = t.id)"
-                ])
+                timezone = criteria.get("timezone", "UTC")
+                query_parts.extend(
+                    [
+                        "),",
+                        "TimeRangeEvents AS (",
+                        "    SELECT * FROM events",
+                        f"    WHERE actual_start AT TIME ZONE ${str(len(params) + 3)} BETWEEN ${str(len(params) + 1)} AND ${str(len(params) + 2)}",
+                    ]
+                )
+                params.extend([criteria["start_time"], criteria["end_time"], timezone])
+                query_parts.extend(
+                    [
+                        "SELECT a.id, a.name, COALESCE(a.active_selections_count, 0) as active_selections_count FROM ActiveSelections a",
+                        "UNION ALL",
+                        "SELECT t.id, t.name, 0 as active_selections_count FROM TimeRangeEvents t",
+                        "WHERE NOT EXISTS (SELECT 1 FROM ActiveSelections a WHERE a.id = t.id)",
+                    ]
+                )
             else:
-                query_parts.extend([
-                    ")",
-                    "SELECT a.id, a.name, COALESCE(a.active_selections_count, 0) as active_selections_count FROM ActiveSelections a"
-                ])
+                query_parts.extend(
+                    [
+                        ")",
+                        "SELECT a.id, a.name, COALESCE(a.active_selections_count, 0) as active_selections_count FROM ActiveSelections a",
+                    ]
+                )
 
             query = "\n".join(query_parts)
-            print(query)
+
             return await self.event_repository.filter_events(query, params)
         except Exception as e:
             self.logger.error(f"Error searching for events: {e}")

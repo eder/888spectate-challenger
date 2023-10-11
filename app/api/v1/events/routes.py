@@ -67,6 +67,7 @@ async def update_event(
             status_code=500, detail=f"Internal server error updating event {event_id}."
         )
 
+
 @events_router.post("/events/filters/")
 async def filter_events(
     criteria: Filters,

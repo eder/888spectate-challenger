@@ -12,7 +12,7 @@ Dependencies:
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import SelectionBase, SelectionUpdate,SelectionFilter 
+from schemas import SelectionBase, SelectionUpdate, SelectionFilter
 from services.selection_service import SelectionService
 from utils.custom_exceptions import CreationError, ValidationError, ForeignKeyError
 from utils.dependencies import get_selection_service, get_logger
@@ -89,12 +89,13 @@ async def get_selections_by_event_id(
 ):
     try:
         logger.info(f"Get selection with event ID {event_id}...")
-        return  await service.get_selections_by_event_id(event_id)
+        return await service.get_selections_by_event_id(event_id)
     except Exception as e:
         logger.error(f"Error fetching selections with event ID {event_id} - {e}")
         raise HTTPException(
-            status_code=500, detail="Internal server error fetching selections by event ID"
-    )
+            status_code=500,
+            detail="Internal server error fetching selections by event ID",
+        )
 
 
 @selections_router.get("/selections/sport/{sport_id}")
@@ -105,14 +106,13 @@ async def get_selections_by_sport_id(
 ):
     try:
         logger.info(f"Get selection with sport ID {sport_id}...")
-        return  await service.get_selections_by_sport_id(sport_id)
+        return await service.get_selections_by_sport_id(sport_id)
     except Exception as e:
         logger.error(f"Error fetching selections with sport ID {sport_id} - {e}")
         raise HTTPException(
-            status_code=500, detail="Internal server error fetching selections by with Sport ID"
-    )
-
-
+            status_code=500,
+            detail="Internal server error fetching selections by with Sport ID",
+        )
 
 
 @selections_router.post("/selections/filter/")

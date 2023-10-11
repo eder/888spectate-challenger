@@ -35,6 +35,7 @@ class EventBase(BaseModel):
     scheduled_start: datetime
     actual_start: datetime
 
+
 class SportBase(BaseModel):
     name: str
     active: bool
@@ -43,6 +44,7 @@ class SportBase(BaseModel):
 class SportUpdate(BaseModel):
     name: Optional[str] = None
     active: Optional[bool] = None
+
 
 class SelectionOutcome(Enum):
     UNSETTLED = "unsettled"
@@ -58,6 +60,7 @@ class SelectionBase(BaseModel):
     active: bool
     outcome: SelectionOutcome
 
+
 class SelectionUpdate(BaseModel):
     name: Optional[str] = None
     event_id: Optional[int] = None
@@ -65,12 +68,14 @@ class SelectionUpdate(BaseModel):
     active: Optional[bool] = None
     outcome: Optional[SelectionOutcome] = None
 
+
 class SelectionFilter(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)] =  None
+    name_regex: Optional[constr(strip_whitespace=True)] = None
     active: Optional[bool] = None
 
+
 class Filters(BaseModel):
-    name_regex: Optional[constr(strip_whitespace=True)] =  None
+    name_regex: Optional[constr(strip_whitespace=True)] = None
     threshold: Optional[int] = 1
     start_time_from: Optional[datetime] = None
     start_time_to: Optional[datetime] = None

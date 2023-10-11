@@ -127,7 +127,6 @@ class EventRepository:
 
     async def filter_events(self, query, params):
         try:
-
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]

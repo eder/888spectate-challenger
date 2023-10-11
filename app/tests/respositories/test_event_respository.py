@@ -4,7 +4,7 @@ from datetime import datetime
 import asyncpg
 import pytest
 from repositories.event_repository import EventRepository
-from schemas import EventType, EventStatus, SearchFilter
+from schemas import EventType, EventStatus
 
 
 @pytest.fixture

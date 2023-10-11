@@ -1,3 +1,4 @@
+import logging
 import asyncpg
 import pytest
 from pytest_mock import mocker
@@ -8,27 +9,32 @@ from schemas import SportBase
 
 
 @pytest.fixture
+def logger_mock(mocker):
+    return mocker.Mock(spec=["info", "error", "debug", "warning"])
+
+
+@pytest.fixture
 def db_pool_mock(mocker):
     return mocker.patch("asyncpg.pool.Pool", autospec=True)
 
 
 @pytest.fixture
-def sport_repository(db_pool_mock, mocker):
+def sport_repository(db_pool_mock, logger_mock, mocker):
     return_value = [{"id": 1, "name": "Sport 1", "slug": "sport-1", "acitve": True}]
 
     mocker.patch.object(SportRepository, "get_all", return_value=return_value)
-    return SportRepository(db_pool_mock)
+    return SportRepository(db_pool_mock, logger_mock)
 
 
 @pytest.fixture
-def sport_repository_create(db_pool_mock, mocker):
+def sport_repository_create(db_pool_mock, logger_mock, mocker):
     return_value = {"id": 1, "name": "Sport 1", "slug": "sport-1", "active": True}
     mocker.patch.object(SportRepository, "create", return_value=return_value)
-    return SportRepository(db_pool_mock)
+    return SportRepository(db_pool_mock, logger_mock)
 
 
 @pytest.fixture
-def sport_repository_update(db_pool_mock, mocker):
+def sport_repository_update(db_pool_mock, logger_mock, mocker):
     return_value = {
         "id": 1,
         "name": "Updated Sport",
@@ -36,7 +42,7 @@ def sport_repository_update(db_pool_mock, mocker):
         "active": False,
     }
     mocker.patch.object(SportRepository, "update", return_value=return_value)
-    return SportRepository(db_pool_mock)
+    return SportRepository(db_pool_mock, logger_mock)
 
 
 @pytest.mark.asyncio

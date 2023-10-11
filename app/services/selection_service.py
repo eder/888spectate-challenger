@@ -130,33 +130,31 @@ class SelectionService:
             ValueError: If the 'name_regex' parameter is None or an empty string.
         """
         try:
-            query_parts = [
-                "SELECT * FROM selections WHERE 1=1"
-            ]
+            query_parts = ["SELECT * FROM selections WHERE 1=1"]
             params = []
-            
+
             if "name_regex" in criteria and criteria["name_regex"]:
                 query_parts.append(" AND name ~ $" + str(len(params) + 1))
                 params.append(criteria["name_regex"])
-            
+
             if "active" in criteria and isinstance(criteria["active"], bool):
                 query_parts.append(" AND active = $" + str(len(params) + 1))
                 params.append(criteria["active"])
-            
+
             query = " ".join(query_parts)
 
             return await self.selection_repository.filter_selections(query, params)
         except Exception as e:
             self.logger.error(f"Error filter for selections: {e}")
             raise
-    
+
     async def get_selections_by_event_id(self, event_id):
         try:
             return await self.selection_repository.get_selections_by_event_id(event_id)
         except Exception as e:
             self.logger.error(f"Error get selections by event ID: {e}")
             raise
-    
+
     async def get_selections_by_sport_id(self, sport_id):
         try:
             return await self.selection_repository.get_selections_by_sport_id(sport_id)
