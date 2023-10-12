@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.8  
-      - environment:
+        environment:
           DATABASE_URL: postgres://test:test@db/test
     working_directory: ~/repo
 
