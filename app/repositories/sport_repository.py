@@ -4,6 +4,7 @@ from typing import List
 from db.database import get_db_pool
 from schemas import SportBase
 from utils.query_builder import QueryBuilder
+from .errors import RepositoryError
 
 
 class SportRepository:
@@ -35,7 +36,7 @@ class SportRepository:
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
-        except Exception as e:
+        except RepositoryError as e:
             self.logger.error(f"Error fetching all sports: {str(e)}")
             raise RepositoryError(f"Error: {str(e)}")
 
@@ -50,7 +51,7 @@ class SportRepository:
             dict: Dictionary representing the newly created sport.
 
         Raises:
-            CustomPostgresError: If there's an error during database access.
+             If there's an error during database access.
         """
         try:
             self.query_builder.add_insert_data(sport)
@@ -60,10 +61,10 @@ class SportRepository:
                 if row:
                     return dict(row)
                 else:
-                    raise Exception("Record not found after insertion")
-        except Exception as e:
+                    raise RepositoryError("Record not found after insertion")
+        except RepositoryError as e:
             self.logger.error(f"Error creating sport: {str(e)}")
-            raise Exception(f"Error creating sport: {str(e)}")
+            raise RepositoryError(f"Error creating sport: {str(e)}")
 
     async def update(self, sport_id: int, sport: dict) -> dict:
         """
@@ -89,10 +90,12 @@ class SportRepository:
                 if row:
                     return dict(row)
                 raise UpdateError(f"Sport with ID {selection_id} not found.")
-        except Exception as e:
+        except RepositoryError as e:
             if "selections_event_id_fkey" in str(e):
-                raise Exception("Invalid sport ID provided.") from e
-            raise Exception(f"Error updating sport with ID {sport_id}. Error: {str(e)}")
+                raise RepositoryError("Invalid sport ID provided.") from e
+            raise RepositoryError(
+                f"Error updating sport with ID {sport_id}. Error: {str(e)}"
+            )
 
     async def filter_sports(self, query, params) -> List[dict]:
         try:
@@ -100,9 +103,9 @@ class SportRepository:
                 rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]
 
-        except Exception as e:
+        except RepositoryError as e:
             self.logger.error(f"Error searching sports: {str(e)}")
-            raise Exception(f"Error searching sports: {str(e)}")
+            raise RepositoryError(f"Error searching sports: {str(e)}")
 
     async def set_sport_inactive(self, sport_id: int):
         """

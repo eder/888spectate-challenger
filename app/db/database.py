@@ -1,10 +1,6 @@
 import os
 import asyncpg
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-pool: asyncpg.pool.Pool = None
-
 
 class DatabaseError(Exception):
     pass
@@ -28,35 +24,49 @@ class CustomPostgresError(asyncpg.PostgresError):
     pass
 
 
+class DatabaseConnection:
+    def __init__(self):
+        self._pool: asyncpg.pool.Pool = None
+        self._database_url = os.getenv("DATABASE_URL")
+
+    async def connect_to_db(self):
+        if self._database_url is None:
+            raise DatabaseError("DATABASE_URL is not set.")
+
+        if self._pool is not None:
+            raise AlreadyConnectedError("The connection pool is already initialized.")
+
+        try:
+            self._pool = await asyncpg.create_pool(self._database_url)
+        except Exception as e:
+            raise DatabaseError(f"Error connecting to the database: {e}")
+
+    async def close_db_connection(self):
+        if self._pool is None:
+            raise NotConnectedError("The connection pool is not initialized.")
+
+        try:
+            await self._pool.close()
+            self._pool = None
+        except Exception as e:
+            raise DatabaseError(f"Error closing the database connection: {e}")
+
+    def get_db_pool(self):
+        if self._pool is None:
+            raise NotConnectedError("The connection pool is not initialized.")
+        return self._pool
+
+
+_db_instance = DatabaseConnection()
+
+
 async def connect_to_db():
-    global pool
-
-    if pool is not None:
-        raise AlreadyConnectedError("The connection pool is already initialized.")
-
-    if DATABASE_URL is None:
-        raise DatabaseError("DATABASE_URL is not set.")
-
-    try:
-        pool = await asyncpg.create_pool(DATABASE_URL)
-    except Exception as e:
-        raise DatabaseError(f"Error connecting to the database: {e}")
+    await _db_instance.connect_to_db()
 
 
 async def close_db_connection():
-    global pool
-
-    if pool is None:
-        raise NotConnectedError("The connection pool is not initialized.")
-
-    try:
-        await pool.close()
-        pool = None
-    except Exception as e:
-        raise DatabaseError(f"Error closing the database connection: {e}")
+    await _db_instance.close_db_connection()
 
 
 def get_db_pool():
-    if pool is None:
-        raise NotConnectedError("The connection pool is not initialized.")
-    return pool
+    return _db_instance.get_db_pool()

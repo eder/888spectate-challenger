@@ -3,12 +3,21 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/python:3.8  # ou qualquer outra versão que você esteja usando
-
+      - image: circleci/python:3.8
+        environment:
+          DATABASE_URL: postgres://test:test@localhost:5432/test_db
+      - image: circleci/postgres:10.0
+        environment:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
     working_directory: ~/repo
 
     steps:
-      - checkout  # Verifique o código da branch no diretório de trabalho
+      - checkout  
+      - run:
+          name: Wait for PostgreSQL to start
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
           name: Install dependencies
           command: |

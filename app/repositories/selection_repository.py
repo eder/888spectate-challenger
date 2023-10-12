@@ -1,9 +1,10 @@
 from typing import List
 import logging
 
-from db.database import get_db_pool, CustomPostgresError
+from db.database import get_db_pool
 from schemas import SelectionOutcome
 from utils.query_builder import QueryBuilder
+from .errors import RepositoryError
 
 
 class SelectionRepository:
@@ -53,7 +54,7 @@ class SelectionRepository:
             dict: Dictionary representing the newly created selection.
 
         Raises:
-            CustomPostgresError: If there's a specific database error during the creation.
+            RepositoryError: If there's a specific database error during the creation.
         """
         try:
             self.query_builder.add_insert_data(selection)
@@ -63,10 +64,10 @@ class SelectionRepository:
                 if row:
                     return dict(row)
                 else:
-                    raise CustomPostgresError("Record not found after insertion")
-        except CustomPostgresError as e:
+                    raise RepositoryError("Record not found after insertion")
+        except RepositoryError as e:
             self.logger.error(f"Error creating selection: {e}")
-            raise CustomPostgresError(f"Error creating selection: {str(e)}")
+            raise RepositoryError(f"Error creating selection: {str(e)}")
 
     async def update(self, selection_id: int, selection: dict) -> dict:
         """
@@ -92,7 +93,7 @@ class SelectionRepository:
                 if row:
                     return dict(row)
                 raise UpdateError(f"Selection with ID {selection_id} not found.")
-        except CustomPostgresError as e:
+        except RepositoryError as e:
             self.logger.error(f"Error updating selection with ID {selection_id}: {e}")
             if "selections_event_id_fkey" in str(e):
                 raise ForeignKeyError("Invalid Selection ID provided.") from e
@@ -165,7 +166,7 @@ class SelectionRepository:
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]
-        except CustomPostgresError as e:
+        except RepositoryError as e:
             self.logger.error(f"Error searching selections with regex: {e}")
             raise Exception(f"Error searching selections: {str(e)}")
 
@@ -175,7 +176,7 @@ class SelectionRepository:
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
-        except CustomPostgresError as e:
+        except RepositoryError as e:
             self.logger.error(f"Error getting selections with event ID: {e}")
             raise Exception(f"Error getting selections: {str(e)}")
 
@@ -185,6 +186,6 @@ class SelectionRepository:
             async with self.db_pool.acquire() as connection:
                 rows = await connection.fetch(query)
                 return [dict(row) for row in rows]
-        except CustomPostgresError as e:
+        except RepositoryError as e:
             self.logger.error(f"Error getting selections with sport ID: {e}")
             raise Exception(f"Error getting selections: {str(e)}")

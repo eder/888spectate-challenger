@@ -7,6 +7,7 @@ from utils.slugify import to_slug
 
 from schemas import EventType, EventStatus
 
+
 class EventService:
     """
     Service class for managing events.

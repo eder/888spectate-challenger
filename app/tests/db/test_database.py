@@ -1,39 +1,36 @@
-import unittest
-from unittest.mock import patch
-import asyncpg
+import pytest
+import asyncio
+from db.database import (
+    connect_to_db,
+    close_db_connection,
+    get_db_pool,
+    AlreadyConnectedError,
+    NotConnectedError,
+)
 
-from db.database import connect_to_db, close_db_connection, get_db_pool, DatabaseError
+pytestmark = pytest.mark.asyncio
 
 
-class DatabaseTests(unittest.TestCase):
-    @patch.object(asyncpg, "create_pool")
-    async def test_connect_to_db(self, mock_create_pool):
-        await connect_to_db()
-        mock_create_pool.assert_called_once()
-
-        with self.assertRaises(AlreadyConnectedError):
-            await connect_to_db()
-
-        with self.assertRaises(DatabaseError):
-            os.environ.pop("DATABASE_URL")
-            await connect_to_db()
-
-    @patch.object(asyncpg, "close_pool")
-    async def test_close_db_connection(self, mock_close_pool):
-        await close_db_connection()
-        mock_close_pool.assert_called_once()
-
-        with self.assertRaises(NotConnectedError):
+class TestDatabaseConnection:
+    @pytest.fixture(autouse=True)
+    async def cleanup(self):
+        yield
+        try:
             await close_db_connection()
+        except NotConnectedError:
+            pass
 
-    async def test_get_db_pool(self):
-        with patch.object(asyncpg, "create_pool") as mock_create_pool:
-            await connect_to_db()
-            pool = get_db_pool()
-
-        with self.assertRaises(NotConnectedError):
+    async def test_connect_to_db(self):
+        with pytest.raises(NotConnectedError):
             get_db_pool()
 
+        await connect_to_db()
 
-if __name__ == "__main__":
-    unittest.main()
+        assert get_db_pool() is not None
+
+    async def test_double_connect_to_db(self):
+        with pytest.raises(
+            AlreadyConnectedError, match="The connection pool is already initialized."
+        ):
+            await connect_to_db()
+            await connect_to_db()
