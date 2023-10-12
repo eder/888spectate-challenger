@@ -4,6 +4,7 @@ from datetime import datetime
 from db.database import get_db_pool
 from utils.query_builder import QueryBuilder
 from .errors import RepositoryError
+from schemas import EventType
 
 
 class EventRepository:
