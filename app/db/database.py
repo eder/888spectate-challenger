@@ -1,20 +1,28 @@
 import os
 import asyncpg
 
+
 class DatabaseError(Exception):
     pass
 
+
 class AlreadyConnectedError(DatabaseError):
     """Exception raised when a connection attempt is made while already connected."""
+
     pass
+
 
 class NotConnectedError(DatabaseError):
     """Exception raised when an operation requires a connection that isn't present."""
+
     pass
+
 
 class CustomPostgresError(asyncpg.PostgresError):
     """Custom exception to wrap asyncpg.PostgresError."""
+
     pass
+
 
 class DatabaseConnection:
     def __init__(self):
@@ -32,7 +40,7 @@ class DatabaseConnection:
             self._pool = await asyncpg.create_pool(self._database_url)
         except Exception as e:
             raise DatabaseError(f"Error connecting to the database: {e}")
-   
+
     async def close_db_connection(self):
         if self._pool is None:
             raise NotConnectedError("The connection pool is not initialized.")
@@ -51,12 +59,14 @@ class DatabaseConnection:
 
 _db_instance = DatabaseConnection()
 
+
 async def connect_to_db():
     await _db_instance.connect_to_db()
+
 
 async def close_db_connection():
     await _db_instance.close_db_connection()
 
+
 def get_db_pool():
     return _db_instance.get_db_pool()
-

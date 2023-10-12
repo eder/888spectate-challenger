@@ -6,6 +6,7 @@ from schemas import SelectionOutcome
 from utils.query_builder import QueryBuilder
 from .errors import RepositoryError
 
+
 class SelectionRepository:
     """
     A repository class responsible for managing CRUD operations on selections.

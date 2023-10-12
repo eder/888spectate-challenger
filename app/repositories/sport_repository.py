@@ -6,6 +6,7 @@ from schemas import SportBase
 from utils.query_builder import QueryBuilder
 from .errors import RepositoryError
 
+
 class SportRepository:
     def __init__(self, db_pool: get_db_pool, logger: logging.Logger):
         """
@@ -92,7 +93,9 @@ class SportRepository:
         except RepositoryError as e:
             if "selections_event_id_fkey" in str(e):
                 raise RepositoryError("Invalid sport ID provided.") from e
-            raise RepositoryError(f"Error updating sport with ID {sport_id}. Error: {str(e)}")
+            raise RepositoryError(
+                f"Error updating sport with ID {sport_id}. Error: {str(e)}"
+            )
 
     async def filter_sports(self, query, params) -> List[dict]:
         try:
