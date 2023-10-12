@@ -1,7 +1,7 @@
 import logging
 
 from datetime import datetime
-from db.database import get_db_pool, CustomPostgresError
+from db.database import get_db_pool
 from utils.query_builder import QueryBuilder
 from .errors import RepositoryError
 
@@ -91,7 +91,7 @@ class EventRepository:
                     return dict(row)
                 return None
 
-        except CustomPostgresError as e:
+        except RepositoryError as e:
             self.logger.error(f"Error updating event with ID {event_id}: {e}")
             raise RepositoryError(f"Error updating event with ID {event_id}: {e}")
 
@@ -114,9 +114,9 @@ class EventRepository:
                 rows = await connection.fetch(query, *params)
                 return [dict(row) for row in rows]
 
-        except Exception as e:
+        except RepositoryError as e:
             self.logger.error(f"Error searching events with regex: {e}")
-            raise Exception(f"Error searching events with regex: {e}")
+            raise RepositoryError(f"Error searching events with regex: {e}")
 
     async def get_active_events_count(self, sport_id: int):
         """
@@ -136,7 +136,7 @@ class EventRepository:
             async with self.db_pool.acquire() as connection:
                 return await connection.fetchval(query, sport_id)
 
-        except Exception as e:
+        except RepositoryError as e:
             self.logger.error(f"Error fetching active events count: {e}")
             raise RepositoryError(f"Error fetching active events count: {e}")
 
@@ -165,6 +165,6 @@ class EventRepository:
                     return dict(row)
                 return None
 
-        except CustomPostgresError as e:
+        except RepositoryError as e:
             self.logger.error(f"Error setting event as inactive: {e}")
             raise RepositoryError(f"Error setting event as inactive: {e}")
