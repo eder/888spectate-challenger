@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: circleci/python:3.8  
       - environment:
-        DATABASE_URL: postgres://test:test@db/test
+          DATABASE_URL: postgres://test:test@db/test
     working_directory: ~/repo
 
     steps:
